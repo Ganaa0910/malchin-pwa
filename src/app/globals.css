@@ -43,6 +43,8 @@
   --nav-active-bg: #e6f4ee;
   --nav-active-fg: #1d9e75;
   --nav-inactive-fg: #66756c;
+  --nav-active-radius: 9999px;
+  --nav-active-shadow: none;
 
   --pattern-band: linear-gradient(90deg, transparent, transparent);
 
@@ -87,6 +89,8 @@
   --nav-active-bg: #1f2a18;
   --nav-active-fg: #9be564;
   --nav-inactive-fg: #6b7a6d;
+  --nav-active-radius: 2px;
+  --nav-active-shadow: inset 0 0 0 1px #9be564;
 
   --pattern-band: linear-gradient(90deg, transparent, transparent);
 
@@ -131,6 +135,8 @@
   --nav-active-bg: #c1502e;
   --nav-active-fg: #fbf4e7;
   --nav-inactive-fg: #5a3f28;
+  --nav-active-radius: 0.25rem;
+  --nav-active-shadow: 2px 2px 0 0 #2d1c10;
 
   /* Mongolian khan-pattern band — repeating diamond chain via CSS */
   --pattern-band:
