@@ -16,19 +16,19 @@ const LINKS = [
   {
     href: "/geofence",
     label: mn.geofence.title,
-    sub: "4 идэвхтэй бүс",
+    sub: "4 бүс",
     Icon: PencilRuler,
   },
   {
     href: "/onboarding",
-    label: "Танилцуулга үзэх",
+    label: "Дахин үзэх",
     sub: "3 алхам",
     Icon: Sparkles,
   },
   {
     href: "/login",
-    label: "Нэвтрэх дэлгэц",
-    sub: "Туршилт",
+    label: "Нэвтрэх",
+    sub: "Жишээ",
     Icon: LogIn,
   },
   {

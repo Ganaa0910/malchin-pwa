@@ -12,17 +12,17 @@ export const THEME_META: Record<
 > = {
   modern: {
     label: "Орчин үе",
-    description: "Цэвэрхэн, ногоон, бөөрөнхий булан",
+    description: "Ногоон, бөөрөнхий",
     swatch: "#1d9e75",
   },
   utility: {
     label: "Хэрэгсэл",
-    description: "Хар дэвсгэр, шигүү өгөгдөл, терминал",
+    description: "Хар, шигүү, терминал",
     swatch: "#9be564",
   },
   nomadic: {
     label: "Нүүдэлчин",
-    description: "Шороон өнгө, монгол хээ, зузаан шугам",
+    description: "Шороо, монгол хээ",
     swatch: "#c1502e",
   },
 };

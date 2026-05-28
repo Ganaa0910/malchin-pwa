@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Pencil, Layers3, Tent, OctagonAlert, Wind } from "lucide-react";
 import {
   Sheet,
@@ -79,8 +79,7 @@ export function GeofenceEditor() {
               {mn.geofence.addZone}
             </SheetTitle>
             <SheetDescription>
-              Полигон зурах горим удахгүй нэмэгдэнэ. Одоохондоо одоо байгаа
-              бүсүүдийг засварлаж болно.
+              Зурах горим удахгүй. Одоо байгаа бүсүүдийг засварлаж болно.
             </SheetDescription>
           </SheetHeader>
         </SheetContent>
@@ -147,7 +146,7 @@ export function GeofenceEditor() {
                 className="tap mt-2 text-xs font-semibold inline-flex items-center gap-1 text-primary"
               >
                 <Pencil className="size-3" aria-hidden />
-                Засварлах
+                Засах
               </button>
             </li>
           );
@@ -175,11 +174,12 @@ function ZoneEditSheet({
   const [bufferM, setBufferM] = useState(zone?.bufferM ?? 200);
   const [deterM, setDeterM] = useState(zone?.deterM ?? 50);
 
-  // Sync local state when a new zone is selected
-  if (zone && open && bufferM !== zone.bufferM && deterM !== zone.deterM) {
-    setBufferM(zone.bufferM);
-    setDeterM(zone.deterM);
-  }
+  useEffect(() => {
+    if (zone) {
+      setBufferM(zone.bufferM);
+      setDeterM(zone.deterM);
+    }
+  }, [zone?.id, zone?.bufferM, zone?.deterM, zone]);
 
   async function save() {
     if (!zone) return;
@@ -205,7 +205,7 @@ function ZoneEditSheet({
             {zone?.name ?? ""}
           </SheetTitle>
           <SheetDescription>
-            Анхааруулга болон дайчилгааны зайг тохируулна
+            Анхаарах болон эргүүлэх зайг тохируулна
           </SheetDescription>
         </SheetHeader>
         {zone && (

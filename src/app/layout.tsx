@@ -14,6 +14,7 @@ import { OfflineBadge } from "@/components/pwa/OfflineBadge";
 import { BreachOverlay } from "@/components/alerts/BreachOverlay";
 import "./globals.css";
 
+// Modern theme (default) fonts — preload eagerly.
 const sora = Sora({
   subsets: ["latin"],
   variable: "--font-sora",
@@ -24,32 +25,37 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+
+// Utility + Nomadic theme fonts — only load when user switches themes.
 const barlow = Barlow_Condensed({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-barlow",
   display: "swap",
+  preload: false,
 });
 const jetbrains = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
   variable: "--font-jetbrains",
   display: "swap",
+  preload: false,
 });
 const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",
   display: "swap",
+  preload: false,
 });
 const mulish = Mulish({
   subsets: ["latin", "cyrillic"],
   variable: "--font-mulish",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
-  title: "Малчин — GPS хяналт",
-  description:
-    "Малын GPS байршил, бэлчээр хяналт, зуданд бэлэн байх систем",
+  title: "Малчин — GPS",
+  description: "Малаа GPS-ээр хянана",
   applicationName: "Малчин",
   appleWebApp: {
     capable: true,

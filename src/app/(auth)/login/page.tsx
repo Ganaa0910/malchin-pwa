@@ -103,7 +103,7 @@ export default function LoginPage() {
                 className="tap text-2xl font-mono tracking-[0.5em] text-center"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Туршилтын горим — ямар ч 4 оронтой код болно.
+                Жишээ горим — дурын 4 оронтой код.
               </p>
             </label>
             <Button

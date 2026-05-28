@@ -14,16 +14,7 @@ import { ProximityBadge } from "@/components/animal/ProximityBadge";
 import { mn } from "@/lib/i18n/mn";
 import type { Animal } from "@/types/animal";
 import { useDevice } from "@/lib/db/hooks";
-
-function timeAgo(iso: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const m = Math.round(ms / 60_000);
-  if (m < 1) return mn.alerts.justNow;
-  if (m < 60) return mn.alerts.minutesAgo(m);
-  const h = Math.round(m / 60);
-  if (h < 24) return mn.alerts.hoursAgo(h);
-  return mn.alerts.daysAgo(Math.round(h / 24));
-}
+import { timeAgoMn } from "@/lib/time";
 
 function batteryColor(b: number): string {
   if (b < 15) return "text-destructive";
@@ -94,7 +85,7 @@ export function AnimalStatusSheet({
               <Radio className="size-3.5" aria-hidden />
               {mn.animal.lastSeen}
             </div>
-            <div className="text-right">{timeAgo(animal.lastSeenAt)}</div>
+            <div className="text-right">{timeAgoMn(animal.lastSeenAt)}</div>
 
             {device ? (
               <>
@@ -133,7 +124,7 @@ export function AnimalStatusSheet({
 
           <Button asChild className="tap w-full mt-2">
             <Link href={`/herd/${animal.id}`}>
-              Бүрэн мэдээлэл
+              Дэлгэрэнгүй
               <ChevronRight className="size-4" aria-hidden />
             </Link>
           </Button>

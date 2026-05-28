@@ -5,7 +5,7 @@ import { mn } from "@/lib/i18n/mn";
 export default function GeofencePage() {
   return (
     <>
-      <ScreenHeader title={mn.geofence.title} subtitle="4 идэвхтэй бүс" />
+      <ScreenHeader title={mn.geofence.title} subtitle="4 бүс" />
       <GeofenceEditor />
     </>
   );

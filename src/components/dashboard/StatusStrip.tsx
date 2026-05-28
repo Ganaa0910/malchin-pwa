@@ -7,8 +7,8 @@ import type { Animal } from "@/types/animal";
 const TIERS = [
   { key: "total", label: "Бүгд", Icon: Layers, color: "var(--fg)" },
   { key: "warning", label: "Анхаар", Icon: AlertTriangle, color: "var(--warning)" },
-  { key: "danger", label: "Дайч", Icon: ShieldAlert, color: "var(--destructive)" },
-  { key: "offline", label: "Тасарсан", Icon: WifiOff, color: "var(--muted-foreground)" },
+  { key: "danger", label: "Гарсан", Icon: ShieldAlert, color: "var(--destructive)" },
+  { key: "offline", label: "Холбоогүй", Icon: WifiOff, color: "var(--muted-foreground)" },
 ] as const;
 
 export function StatusStrip({ animals }: { animals: Animal[] }) {

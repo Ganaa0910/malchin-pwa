@@ -11,11 +11,11 @@ import {
   Wifi,
   CheckCheck,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { useAlerts } from "@/lib/db/hooks";
 import { useAppStore } from "@/lib/store/useAppStore";
 import { getDb } from "@/lib/db";
 import { mn } from "@/lib/i18n/mn";
+import { timeAgoMn } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Alert, AlertType, AlertPriority } from "@/types/alert";
 
@@ -132,7 +132,7 @@ function AlertItem({
         </p>
         <div className="flex items-center justify-between gap-2 mt-2">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
-            {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
+            {timeAgoMn(alert.createdAt)}
           </span>
           {!alert.acknowledged && (
             <div className="flex gap-1.5">

@@ -175,7 +175,7 @@ export function MapView({
         height={size.h}
         className="absolute inset-0 pointer-events-auto"
         role="img"
-        aria-label="Газрын зураг — малын байршил"
+        aria-label="Газрын зураг"
       >
         {/* Zones */}
         {zones
@@ -203,7 +203,7 @@ export function MapView({
           })}
 
         {/* Base camp marker */}
-        <g aria-label="Бааз" transform={`translate(${baseX} ${baseY})`}>
+        <g aria-label="Хот" transform={`translate(${baseX} ${baseY})`}>
           <circle r={11} fill="var(--bg)" stroke="var(--primary)" strokeWidth={3} />
           <circle r={4} fill="var(--primary)" />
         </g>
@@ -276,7 +276,7 @@ export function MapView({
       </svg>
 
       <div className="absolute top-2 left-2 px-2 py-1 rounded-md text-[10px] uppercase tracking-wider bg-card/80 text-muted-foreground backdrop-blur border-card font-mono">
-        зураг загвар
+        Жишээ зураг
       </div>
     </div>
   );

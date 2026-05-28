@@ -52,7 +52,7 @@ export function BottomNav() {
 
   return (
     <nav
-      aria-label="Үндсэн цэс"
+      aria-label="Цэс"
       className="fixed inset-x-0 bottom-0 z-40 pb-safe"
       style={{
         background: "var(--nav-bg)",
@@ -69,7 +69,7 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
                 className={cn(
-                  "tap flex flex-col items-center justify-center gap-1 py-2 px-1",
+                  "tap flex flex-col items-center justify-end gap-1 pt-2 pb-1.5 px-1",
                   "text-[11px] leading-none transition-colors",
                 )}
                 style={{
@@ -80,21 +80,21 @@ export function BottomNav() {
               >
                 <span
                   aria-hidden
-                  className="flex items-center justify-center transition-all"
+                  className="flex items-center justify-center transition-all h-7"
                   style={{
                     background: active
                       ? "var(--nav-active-bg)"
                       : "transparent",
                     borderRadius: "var(--nav-active-radius)",
                     boxShadow: active ? "var(--nav-active-shadow)" : "none",
-                    padding: "6px 14px",
+                    padding: active ? "2px 12px" : "2px 4px",
                   }}
                 >
                   <Icon className="size-5" />
                 </span>
                 <span
                   className={cn(
-                    "font-medium tracking-tight pt-0.5",
+                    "font-medium tracking-tight",
                     active && "font-semibold",
                   )}
                 >

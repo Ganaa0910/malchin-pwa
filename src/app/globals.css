@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* ─────────────────────────────────────────────────────────────
    Theme tokens — single source of truth.

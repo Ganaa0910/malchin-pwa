@@ -8,9 +8,9 @@ import {
   WifiOff,
   Activity,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { useAlerts } from "@/lib/db/hooks";
 import { mn } from "@/lib/i18n/mn";
+import { timeAgoMn } from "@/lib/time";
 import type { Animal } from "@/types/animal";
 import type { AlertType } from "@/types/alert";
 
@@ -39,7 +39,7 @@ export function EventLog({ animal }: { animal: Animal }) {
       <section className="space-y-2">
         <h2 className="font-display text-lg px-1">{mn.animal.events}</h2>
         <p className="text-sm text-muted-foreground text-center py-6 rounded-md border-card bg-card">
-          Сүүлийн үед үйл явдал бүртгэгдээгүй
+          Түүх байхгүй
         </p>
       </section>
     );
@@ -71,9 +71,7 @@ export function EventLog({ animal }: { animal: Animal }) {
                   {e.message}
                 </p>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1 font-mono">
-                  {formatDistanceToNow(new Date(e.createdAt), {
-                    addSuffix: true,
-                  })}
+                  {timeAgoMn(e.createdAt)}
                 </p>
               </div>
             </li>

@@ -37,7 +37,7 @@ export function WeatherCard({ weather }: { weather: Weather }) {
         <Icon className="size-16 text-primary" aria-hidden />
       </div>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono mt-3">
-        Шинэчилсэн: {format(new Date(weather.updatedAt), "HH:mm")}
+        Шинэчилсэн {format(new Date(weather.updatedAt), "HH:mm")}
       </p>
     </article>
   );

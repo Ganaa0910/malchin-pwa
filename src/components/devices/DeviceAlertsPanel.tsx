@@ -50,10 +50,10 @@ export function DeviceAlertsPanel() {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold leading-tight">
-                  {lowBatteryCollars.length} төхөөрөмжийн батарей бага
+                  {lowBatteryCollars.length} GPS дуусч байна
                 </p>
                 <p className="text-xs text-muted-foreground leading-tight mt-0.5">
-                  15%-аас доош цэнэгтэй
+                  Цэнэг 15%-аас бага
                 </p>
               </div>
             </div>

@@ -78,7 +78,7 @@ export function RoutePlayback({ animal }: { animal: Animal }) {
               max={route.length - 1}
               value={safeIdx}
               onChange={(e) => setIdx(Number(e.target.value))}
-              aria-label="Цаг шилжүүлэх"
+              aria-label="Цаг үе"
               className="w-full accent-[color:var(--primary)] tap"
             />
             <div className="flex justify-between text-[10px] font-mono text-muted-foreground">

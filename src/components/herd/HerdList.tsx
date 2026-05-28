@@ -92,7 +92,7 @@ export function HerdList() {
 
       <div
         role="tablist"
-        aria-label="Шүүлт"
+        aria-label="Шүүх"
         className="flex gap-2 -mx-5 px-5 overflow-x-auto scrollbar-none"
         style={{ scrollbarWidth: "none" }}
       >
@@ -134,7 +134,7 @@ export function HerdList() {
 
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-12">
-          Тохирох мал олдсонгүй
+          Олдсонгүй
         </p>
       ) : (
         <ul className="space-y-2">

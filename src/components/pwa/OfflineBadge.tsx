@@ -30,7 +30,7 @@ export function OfflineBadge({ className }: { className?: string }) {
         style={{ boxShadow: "var(--shadow-button)" }}
       >
         <WifiOff className="size-4" aria-hidden />
-        <span>Сүлжээгүй горим</span>
+        <span>Сүлжээгүй</span>
       </div>
     </div>
   );

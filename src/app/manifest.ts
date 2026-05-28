@@ -2,10 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Малчин — GPS хяналт",
+    name: "Малчин — GPS",
     short_name: "Малчин",
-    description:
-      "Малын GPS байршил, бэлчээр хяналт, зуданд бэлэн байх систем",
+    description: "Малаа GPS-ээр хянана",
     lang: "mn",
     dir: "ltr",
     start_url: "/",
