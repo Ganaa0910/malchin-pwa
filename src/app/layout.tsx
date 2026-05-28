@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { RegisterPWA } from "@/components/pwa/RegisterPWA";
 import { OfflineBadge } from "@/components/pwa/OfflineBadge";
+import { BreachOverlay } from "@/components/alerts/BreachOverlay";
 import "./globals.css";
 
 const sora = Sora({
@@ -92,6 +93,7 @@ export default function RootLayout({
           <RegisterPWA />
           <OfflineBadge />
           {children}
+          <BreachOverlay />
         </ThemeProvider>
       </body>
     </html>
