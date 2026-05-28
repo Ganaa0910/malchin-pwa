@@ -84,6 +84,9 @@ export interface MapViewProps {
   baseLng: number;
   onAnimalClick?: (id: string) => void;
   selectedAnimalId?: string | null;
+  /** Optional route path — when provided, MapView focuses on the route. */
+  routePath?: { lat: number; lng: number }[];
+  routeCurrentIdx?: number;
   height?: string | number;
   className?: string;
 }
@@ -100,6 +103,8 @@ export function MapView({
   baseLng,
   onAnimalClick,
   selectedAnimalId = null,
+  routePath,
+  routeCurrentIdx,
   height = "100%",
   className,
 }: MapViewProps) {
@@ -118,10 +123,29 @@ export function MapView({
     return () => ro.disconnect();
   }, []);
 
-  const bounds = useMemo(
-    () => calcBounds(zones, animals),
-    [zones, animals],
-  );
+  const bounds = useMemo(() => {
+    if (routePath && routePath.length > 0) {
+      // Focus bounds on the route + selected animal current pos
+      const focusAnimal = selectedAnimalId
+        ? animals.filter((a) => a.id === selectedAnimalId)
+        : [];
+      const dummyZones: Zone[] = routePath.length
+        ? [
+            {
+              id: "_route",
+              name: "_route",
+              type: "pasture",
+              coordinates: routePath.map((p) => [p.lat, p.lng] as [number, number]),
+              bufferM: 0,
+              deterM: 0,
+              active: true,
+            },
+          ]
+        : [];
+      return calcBounds(dummyZones, focusAnimal, 0.25);
+    }
+    return calcBounds(zones, animals);
+  }, [zones, animals, routePath, selectedAnimalId]);
 
   const [baseX, baseY] = project(baseLat, baseLng, bounds, size.w, size.h);
 
@@ -184,8 +208,45 @@ export function MapView({
           <circle r={4} fill="var(--primary)" />
         </g>
 
-        {/* Animal pins */}
-        {animals.map((a) => {
+        {/* Route polyline + current position marker */}
+        {routePath && routePath.length > 1 && (
+          <>
+            <polyline
+              points={routePath
+                .map((p) => {
+                  const [x, y] = project(p.lat, p.lng, bounds, size.w, size.h);
+                  return `${x.toFixed(1)},${y.toFixed(1)}`;
+                })
+                .join(" ")}
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth={2.5}
+              strokeOpacity={0.7}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {(() => {
+              const idx = Math.min(
+                Math.max(0, routeCurrentIdx ?? routePath.length - 1),
+                routePath.length - 1,
+              );
+              const p = routePath[idx];
+              const [x, y] = project(p.lat, p.lng, bounds, size.w, size.h);
+              return (
+                <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
+                  <circle r={10} fill="var(--primary)" fillOpacity={0.2} />
+                  <circle r={6} fill="var(--primary)" stroke="var(--bg)" strokeWidth={1.5} />
+                </g>
+              );
+            })()}
+          </>
+        )}
+
+        {/* Animal pins (hidden when in route mode unless selected) */}
+        {(routePath
+          ? animals.filter((a) => a.id === selectedAnimalId)
+          : animals
+        ).map((a) => {
           const [x, y] = project(a.lat, a.lng, bounds, size.w, size.h);
           const selected = selectedAnimalId === a.id;
           const r = selected ? 8 : a.status === "danger" ? 6 : 5;
