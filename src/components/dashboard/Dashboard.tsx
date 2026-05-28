@@ -5,6 +5,7 @@ import { Crosshair } from "lucide-react";
 import { useAnimals, useZones, useOwner } from "@/lib/db/hooks";
 import { MapView } from "@/components/map/MapView";
 import { AnimalStatusSheet } from "@/components/animal/AnimalStatusSheet";
+import { UrgentRail } from "./UrgentRail";
 import { cn } from "@/lib/utils";
 
 export function Dashboard() {
@@ -13,6 +14,9 @@ export function Dashboard() {
   const owner = useOwner();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [recenter, setRecenter] = useState(0);
+  const [focus, setFocus] = useState<{ token: number; lat?: number; lng?: number }>({
+    token: 0,
+  });
 
   const selected = useMemo(
     () => animals.find((a) => a.id === selectedId) ?? null,
@@ -42,8 +46,17 @@ export function Dashboard() {
           baseLat={baseLat}
           baseLng={baseLng}
           selectedAnimalId={selectedId}
-          onAnimalClick={(id) => setSelectedId(id)}
+          onAnimalClick={(id) => {
+            setSelectedId(id);
+            const a = animals.find((x) => x.id === id);
+            if (a) {
+              setFocus((f) => ({ token: f.token + 1, lat: a.lat, lng: a.lng }));
+            }
+          }}
           recenterToken={recenter}
+          focusToken={focus.token}
+          focusLat={focus.lat}
+          focusLng={focus.lng}
         />
 
         {/* Top floating card — location + status summary */}
@@ -75,23 +88,37 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Floating recenter button */}
+        {/* Floating recenter button — sits above the urgent rail */}
         <button
           type="button"
           aria-label="Хот руу буцах"
           onClick={() => setRecenter((n) => n + 1)}
           className={cn(
-            "pointer-events-auto absolute right-4 z-20",
+            "pointer-events-auto absolute right-4 z-30",
             "size-11 rounded-full border bg-background shadow-sm",
             "flex items-center justify-center",
             "hover:bg-accent active:scale-95 transition",
           )}
           style={{
-            bottom: "calc(env(safe-area-inset-bottom) + 88px)",
+            bottom: "calc(env(safe-area-inset-bottom) + 218px)",
           }}
         >
           <Crosshair className="size-5" />
         </button>
+
+        {/* Urgent animals rail — pinned above bottom nav */}
+        <UrgentRail
+          animals={animals}
+          selectedId={selectedId}
+          onSelect={(id) => {
+            setSelectedId(id);
+            const a = animals.find((x) => x.id === id);
+            if (a) {
+              setFocus((f) => ({ token: f.token + 1, lat: a.lat, lng: a.lng }));
+            }
+          }}
+          bottomOffset={84}
+        />
       </div>
 
       <AnimalStatusSheet

@@ -46,6 +46,10 @@ export interface MapViewLeafletProps {
   routeCurrentIdx?: number;
   /** Increment to recenter on base camp. */
   recenterToken?: number;
+  /** When this token changes, pan to focusLat/focusLng. */
+  focusToken?: number;
+  focusLat?: number;
+  focusLng?: number;
 }
 
 function calcBounds(
@@ -129,6 +133,27 @@ function RecenterController({
   return null;
 }
 
+function FocusController({
+  token,
+  lat,
+  lng,
+}: {
+  token: number;
+  lat?: number;
+  lng?: number;
+}) {
+  const map = useMap();
+  const seen = useRef<number>(token);
+  useEffect(() => {
+    if (token === seen.current) return;
+    if (lat === undefined || lng === undefined) return;
+    seen.current = token;
+    const targetZoom = Math.max(map.getZoom(), 14);
+    map.flyTo([lat, lng], targetZoom, { duration: 0.5 });
+  }, [token, lat, lng, map]);
+  return null;
+}
+
 export default function MapViewLeaflet({
   animals,
   zones,
@@ -139,6 +164,9 @@ export default function MapViewLeaflet({
   routePath,
   routeCurrentIdx,
   recenterToken = 0,
+  focusToken = 0,
+  focusLat,
+  focusLng,
 }: MapViewLeafletProps) {
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -166,6 +194,7 @@ export default function MapViewLeaflet({
     >
       <BoundsFlyer bounds={bounds} />
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
+      <FocusController token={focusToken} lat={focusLat} lng={focusLng} />
       <TileLayer
         url={TILE_URL}
         attribution={ATTR}
