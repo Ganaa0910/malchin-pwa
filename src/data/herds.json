@@ -1,0 +1,30 @@
+[
+  {
+    "id": "herd-sheep",
+    "ownerId": "owner-1",
+    "name": "Хонин сүрэг",
+    "species": "хонь",
+    "count": 149
+  },
+  {
+    "id": "herd-goat",
+    "ownerId": "owner-1",
+    "name": "Ямаан сүрэг",
+    "species": "ямаа",
+    "count": 62
+  },
+  {
+    "id": "herd-cow",
+    "ownerId": "owner-1",
+    "name": "Үхрийн сүрэг",
+    "species": "үхэр",
+    "count": 25
+  },
+  {
+    "id": "herd-horse",
+    "ownerId": "owner-1",
+    "name": "Адууны сүрэг",
+    "species": "морь",
+    "count": 12
+  }
+]

@@ -1,0 +1,79 @@
+{
+  "locationName": "Хэнтий, Хэрлэн",
+  "lat": 48.05,
+  "lng": 109.65,
+  "currentTempC": 9.4,
+  "currentConditions": "cloudy",
+  "dzudRisk": "elevated",
+  "dzudFactors": [
+    "Маргаашийн цас 15-20см",
+    "Шөнийн хүйтэн -8°C хүртэл",
+    "Хадлан хомс — 60% хүрэлцэхгүй"
+  ],
+  "forecast": [
+    {
+      "date": "2026-05-28",
+      "tempMaxC": 12.9,
+      "tempMinC": 1.8,
+      "conditions": "sunny",
+      "windKmh": 8.8,
+      "precipMm": 0,
+      "snowCm": 0
+    },
+    {
+      "date": "2026-05-29",
+      "tempMaxC": 17.2,
+      "tempMinC": -1.3,
+      "conditions": "cloudy",
+      "windKmh": 6.7,
+      "precipMm": 0,
+      "snowCm": 0
+    },
+    {
+      "date": "2026-05-30",
+      "tempMaxC": 7.6,
+      "tempMinC": -6.5,
+      "conditions": "windy",
+      "windKmh": 10.4,
+      "precipMm": 0,
+      "snowCm": 0
+    },
+    {
+      "date": "2026-05-31",
+      "tempMaxC": 12.9,
+      "tempMinC": -3.6,
+      "conditions": "snow",
+      "windKmh": 15.2,
+      "precipMm": 0,
+      "snowCm": 12.2
+    },
+    {
+      "date": "2026-06-01",
+      "tempMaxC": 10.3,
+      "tempMinC": -0.9,
+      "conditions": "cloudy",
+      "windKmh": 9.5,
+      "precipMm": 0,
+      "snowCm": 0
+    },
+    {
+      "date": "2026-06-02",
+      "tempMaxC": 12.7,
+      "tempMinC": -2,
+      "conditions": "sunny",
+      "windKmh": 5.4,
+      "precipMm": 0,
+      "snowCm": 0
+    },
+    {
+      "date": "2026-06-03",
+      "tempMaxC": 9,
+      "tempMinC": -7.5,
+      "conditions": "rain",
+      "windKmh": 15.1,
+      "precipMm": 5.9,
+      "snowCm": 0
+    }
+  ],
+  "updatedAt": "2026-05-27T23:45:00.000Z"
+}
