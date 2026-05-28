@@ -32,7 +32,7 @@ export function AnimalProfile({ id }: { id: string }) {
   const title = animal.name ? `${animal.name}` : animal.id;
 
   return (
-    <main className="pb-6 space-y-5">
+    <main className="pb-nav space-y-5">
       <header className="pt-safe px-5 pt-3 pb-2 space-y-3">
         <Link
           href="/herd"
@@ -47,7 +47,7 @@ export function AnimalProfile({ id }: { id: string }) {
               {mn.species[animal.species]}
               {animal.breed ? ` · ${animal.breed}` : ""}
             </p>
-            <h1 className="font-display text-3xl leading-tight">{title}</h1>
+            <h1 className="text-3xl leading-tight">{title}</h1>
             <p className="text-sm text-muted-foreground font-mono mt-0.5">
               {animal.id} · {animal.tag}
             </p>
@@ -88,7 +88,7 @@ export function AnimalProfile({ id }: { id: string }) {
 
       {animal.healthFlags.length > 0 && (
         <section className="px-5 space-y-2">
-          <h2 className="font-display text-lg">{mn.animal.healthFlags}</h2>
+          <h2 className="text-lg">{mn.animal.healthFlags}</h2>
           <div className="flex flex-wrap gap-2">
             {animal.healthFlags.map((f) => (
               <span
@@ -128,15 +128,15 @@ function StatCard({
 }) {
   return (
     <div
-      className="rounded-md border-card bg-card text-card-foreground p-3"
-      style={{ boxShadow: "var(--shadow-card)" }}
+      className="rounded-md border bg-card text-card-foreground p-3"
+      
     >
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <Icon className="size-3.5" aria-hidden />
         <span className="text-[10px] uppercase tracking-wider">{label}</span>
       </div>
       <div
-        className={`font-display text-xl mt-1 ${valueClass ?? ""}`}
+        className={`text-xl mt-1 ${valueClass ?? ""}`}
       >
         {value}
       </div>

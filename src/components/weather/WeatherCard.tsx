@@ -19,15 +19,15 @@ export function WeatherCard({ weather }: { weather: Weather }) {
   const Icon = COND_ICON[weather.currentConditions];
   return (
     <article
-      className="rounded-md border-card bg-card text-card-foreground p-4"
-      style={{ boxShadow: "var(--shadow-card)" }}
+      className="rounded-md border bg-card text-card-foreground p-4"
+      
     >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             {weather.locationName}
           </p>
-          <p className="font-display text-5xl leading-none mt-1">
+          <p className="text-5xl leading-none mt-1">
             {Math.round(weather.currentTempC)}°
           </p>
           <p className="text-sm text-muted-foreground mt-1">

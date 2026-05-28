@@ -15,12 +15,7 @@ type Tab = {
 };
 
 const TABS: Tab[] = [
-  {
-    href: "/",
-    label: mn.nav.home,
-    Icon: MapPinned,
-    match: (p) => p === "/",
-  },
+  { href: "/", label: mn.nav.home, Icon: MapPinned, match: (p) => p === "/" },
   {
     href: "/herd",
     label: mn.nav.herd,
@@ -53,11 +48,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Цэс"
-      className="fixed inset-x-0 bottom-0 z-40 pb-safe"
-      style={{
-        background: "var(--nav-bg)",
-        borderTop: "1px solid var(--nav-border)",
-      }}
+      className="fixed inset-x-0 bottom-0 z-40 bg-background/95 backdrop-blur border-t pb-safe"
     >
       <ul className="mx-auto max-w-[420px] grid grid-cols-5">
         {TABS.map(({ href, label, Icon, match }) => {
@@ -69,37 +60,21 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
                 className={cn(
-                  "tap flex flex-col items-center justify-end gap-1 pt-2 pb-1.5 px-1",
+                  "tap flex flex-col items-center justify-center gap-1 py-2",
                   "text-[11px] leading-none transition-colors",
+                  active
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
-                style={{
-                  color: active
-                    ? "var(--nav-active-fg)"
-                    : "var(--nav-inactive-fg)",
-                }}
               >
-                <span
-                  aria-hidden
-                  className="flex items-center justify-center transition-all h-7"
-                  style={{
-                    background: active
-                      ? "var(--nav-active-bg)"
-                      : "transparent",
-                    borderRadius: "var(--nav-active-radius)",
-                    boxShadow: active ? "var(--nav-active-shadow)" : "none",
-                    padding: active ? "2px 12px" : "2px 4px",
-                  }}
-                >
-                  <Icon className="size-5" />
-                </span>
-                <span
+                <Icon
                   className={cn(
-                    "font-medium tracking-tight",
-                    active && "font-semibold",
+                    "size-5 transition-colors",
+                    active ? "text-primary" : "",
                   )}
-                >
-                  {label}
-                </span>
+                  strokeWidth={active ? 2.25 : 1.75}
+                />
+                <span className={cn(active && "font-medium")}>{label}</span>
               </Link>
             </li>
           );

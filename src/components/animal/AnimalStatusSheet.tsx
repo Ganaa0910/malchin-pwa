@@ -42,8 +42,7 @@ export function AnimalStatusSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-xl pb-safe max-w-[420px] mx-auto"
-        style={{ borderRadius: "var(--radius) var(--radius) 0 0" }}
+        className="pb-safe max-w-[420px] mx-auto"
       >
         <SheetHeader className="px-5 pt-2">
           <div className="flex items-start justify-between gap-3">
@@ -52,7 +51,7 @@ export function AnimalStatusSheet({
                 {speciesLabel}
                 {animal.breed ? ` · ${animal.breed}` : ""}
               </p>
-              <SheetTitle className="font-display text-2xl leading-tight truncate">
+              <SheetTitle className="text-2xl leading-tight truncate">
                 {title}
               </SheetTitle>
               <SheetDescription className="sr-only">

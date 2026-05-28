@@ -24,10 +24,10 @@ export function OfflineBadge({ className }: { className?: string }) {
       <div
         className={cn(
           "pointer-events-auto mt-2 flex items-center gap-2 rounded-full",
-          "bg-warning text-warning-foreground border-card",
+          "bg-warning text-warning-foreground border",
           "px-3 py-1.5 text-sm font-medium",
         )}
-        style={{ boxShadow: "var(--shadow-button)" }}
+        
       >
         <WifiOff className="size-4" aria-hidden />
         <span>Сүлжээгүй</span>

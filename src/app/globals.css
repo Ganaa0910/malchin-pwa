@@ -1,175 +1,55 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* ─────────────────────────────────────────────────────────────
-   Theme tokens — single source of truth.
-   `data-theme` is set on <html> by next-themes.
-   Token names match shadcn/ui contract.
-   ───────────────────────────────────────────────────────────── */
-
-:root,
-[data-theme="modern"] {
-  --bg: #ffffff;
-  --bg-elev: #f5f8f6;
-  --fg: #0a1014;
-  --card: #ffffff;
-  --card-fg: #0a1014;
-  --popover: #ffffff;
-  --popover-fg: #0a1014;
-  --primary: #1d9e75;
-  --primary-fg: #ffffff;
-  --secondary: #f0f4f1;
-  --secondary-fg: #0a1014;
-  --muted: #f0f4f1;
-  --muted-fg: #66756c;
-  --accent: #e6f4ee;
-  --accent-fg: #1d9e75;
-  --destructive: #e54d4d;
-  --destructive-fg: #ffffff;
-  --warning: #e8a23a;
-  --warning-fg: #2a1d05;
-  --success: #1d9e75;
-  --success-fg: #ffffff;
-  --border: #e3e8e5;
-  --input: #e3e8e5;
-  --ring: #1d9e75;
-
-  --radius: 0.75rem;
-  --shadow-card: 0 1px 3px rgba(10, 16, 20, 0.08), 0 1px 2px rgba(10, 16, 20, 0.04);
-  --shadow-button: 0 1px 2px rgba(10, 16, 20, 0.08);
-  --border-width-card: 1px;
-
-  --nav-bg: #ffffff;
-  --nav-border: #e3e8e5;
-  --nav-active-bg: #e6f4ee;
-  --nav-active-fg: #1d9e75;
-  --nav-inactive-fg: #66756c;
-  --nav-active-radius: 9999px;
-  --nav-active-shadow: none;
-
-  --pattern-band: linear-gradient(90deg, transparent, transparent);
-
-  --font-display: var(--font-sora), var(--font-inter), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-}
-
-[data-theme="utility"] {
-  --bg: #0a0c0e;
-  --bg-elev: #11151a;
-  --fg: #d8e0d4;
-  --card: #11151a;
-  --card-fg: #d8e0d4;
-  --popover: #11151a;
-  --popover-fg: #d8e0d4;
-  --primary: #9be564;
-  --primary-fg: #0a0c0e;
-  --secondary: #1a1f25;
-  --secondary-fg: #d8e0d4;
-  --muted: #1a1f25;
-  --muted-fg: #6b7a6d;
-  --accent: #1f2a18;
-  --accent-fg: #9be564;
-  --destructive: #ff4d4d;
-  --destructive-fg: #ffffff;
-  --warning: #f0c419;
-  --warning-fg: #0a0c0e;
-  --success: #9be564;
-  --success-fg: #0a0c0e;
-  --border: #1f262e;
-  --input: #1a1f25;
-  --ring: #9be564;
-
-  --radius: 0.125rem;
-  --shadow-card: none;
-  --shadow-button: none;
-  --border-width-card: 1px;
-
-  --nav-bg: #0a0c0e;
-  --nav-border: #1f262e;
-  --nav-active-bg: #1f2a18;
-  --nav-active-fg: #9be564;
-  --nav-inactive-fg: #6b7a6d;
-  --nav-active-radius: 2px;
-  --nav-active-shadow: inset 0 0 0 1px #9be564;
-
-  --pattern-band: linear-gradient(90deg, transparent, transparent);
-
-  --font-display: var(--font-barlow), var(--font-jetbrains), "Inter Tight", system-ui, sans-serif;
-  --font-body: var(--font-jetbrains), ui-monospace, monospace;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-}
-
-[data-theme="nomadic"] {
-  --bg: #f5ecdc;
-  --bg-elev: #ead8b8;
-  --fg: #2d1c10;
-  --card: #fbf4e7;
-  --card-fg: #2d1c10;
-  --popover: #fbf4e7;
-  --popover-fg: #2d1c10;
-  --primary: #c1502e;
-  --primary-fg: #fbf4e7;
-  --secondary: #d98a3d;
-  --secondary-fg: #2d1c10;
-  --muted: #ead8b8;
-  --muted-fg: #5a3f28;
-  --accent: #d98a3d;
-  --accent-fg: #2d1c10;
-  --destructive: #8b0000;
-  --destructive-fg: #fbf4e7;
-  --warning: #d98a3d;
-  --warning-fg: #2d1c10;
-  --success: #4a7a3c;
-  --success-fg: #fbf4e7;
-  --border: #2d1c10;
-  --input: #fbf4e7;
-  --ring: #c1502e;
-
-  --radius: 0.25rem;
-  --shadow-card: 4px 4px 0 0 #2d1c10;
-  --shadow-button: 3px 3px 0 0 #2d1c10;
-  --border-width-card: 2px;
-
-  --nav-bg: #fbf4e7;
-  --nav-border: #2d1c10;
-  --nav-active-bg: #c1502e;
-  --nav-active-fg: #fbf4e7;
-  --nav-inactive-fg: #5a3f28;
-  --nav-active-radius: 0.25rem;
-  --nav-active-shadow: 2px 2px 0 0 #2d1c10;
-
-  /* Mongolian khan-pattern band — repeating diamond chain via CSS */
-  --pattern-band:
-    repeating-linear-gradient(45deg, #c1502e 0 6px, transparent 6px 12px),
-    repeating-linear-gradient(-45deg, #c1502e 0 6px, transparent 6px 12px);
-
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-body: var(--font-mulish), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+/* shadcn neutral (zinc) + green primary — single theme */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.611 0.18 145.4);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.76 0.16 70);
+  --warning-foreground: oklch(0.145 0 0);
+  --success: oklch(0.611 0.18 145.4);
+  --success-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.611 0.18 145.4);
+  --radius: 0.5rem;
 }
 
 @theme inline {
-  --color-background: var(--bg);
-  --color-foreground: var(--fg);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-card-foreground: var(--card-fg);
+  --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-fg);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-fg);
+  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-fg);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-fg);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-fg);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-fg);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-fg);
+  --color-warning-foreground: var(--warning-foreground);
   --color-success: var(--success);
-  --color-success-foreground: var(--success-fg);
+  --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -180,47 +60,65 @@
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-body);
-  --font-display: var(--font-display);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* {
+  border-color: var(--border);
 }
 
 html,
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  font-family: var(--font-body);
-  font-size: 16px;
+  font-family: var(--font-sans);
+  font-size: 15px;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: var(--font-display);
-}
-
-.font-body { font-family: var(--font-body); }
-.font-mono { font-family: var(--font-mono); }
-
-/* Min 44px tap target — apply via .tap */
+/* Min 44px tap target */
 .tap {
   min-height: 44px;
   min-width: 44px;
 }
 
-.shadow-card { box-shadow: var(--shadow-card); }
-.shadow-button { box-shadow: var(--shadow-button); }
-.border-card { border-width: var(--border-width-card); border-color: var(--border); }
-
-.pattern-band {
-  background-image: var(--pattern-band);
-  background-size: 12px 12px;
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pb-nav {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 76px);
+}
+.h-page {
+  height: 100dvh;
 }
 
-.pt-safe { padding-top: env(safe-area-inset-top); }
-.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+/* Leaflet — keep neutral, contain its z-index storm */
+.leaflet-container {
+  background: var(--muted);
+  font-family: var(--font-sans);
+  outline: none;
+  position: relative;
+  z-index: 0;
+}
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  background: color-mix(in srgb, var(--background) 80%, transparent) !important;
+  color: var(--muted-foreground) !important;
+  backdrop-filter: blur(4px);
+}
+.leaflet-control-attribution a {
+  color: var(--primary) !important;
+}

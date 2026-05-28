@@ -33,13 +33,13 @@ export default function LoginPage() {
   return (
     <main className="min-h-dvh pt-safe pb-safe flex flex-col px-5">
       <header className="pt-4 pb-2">
-        <span className="font-display text-base">{mn.app.name}</span>
+        <span className="text-base">{mn.app.name}</span>
       </header>
 
       <div className="flex-1 flex flex-col justify-center gap-6 max-w-sm w-full mx-auto">
         <div
-          className="size-16 rounded-md border-card bg-card flex items-center justify-center mx-auto"
-          style={{ boxShadow: "var(--shadow-card)" }}
+          className="size-16 rounded-md border bg-card flex items-center justify-center mx-auto"
+          
         >
           {stage === "phone" ? (
             <Phone className="size-7 text-primary" aria-hidden />
@@ -49,7 +49,7 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center space-y-1">
-          <h1 className="font-display text-2xl leading-tight">
+          <h1 className="text-2xl leading-tight">
             {mn.login.title}
           </h1>
           <p className="text-sm text-muted-foreground">{mn.login.helper}</p>

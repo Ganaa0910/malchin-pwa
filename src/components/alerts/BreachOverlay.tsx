@@ -73,7 +73,7 @@ export function BreachOverlay() {
               </p>
               <h1
                 id="breach-title"
-                className="font-display text-2xl leading-tight"
+                className="text-2xl leading-tight"
               >
                 {mn.breach.title}
               </h1>
@@ -96,7 +96,7 @@ export function BreachOverlay() {
             </p>
             <p
               id="breach-message"
-              className="font-display text-3xl leading-tight"
+              className="text-3xl leading-tight"
             >
               {animal?.name ?? animal?.id ?? "Тодорхойгүй"}
             </p>

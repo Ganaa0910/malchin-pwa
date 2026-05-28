@@ -33,8 +33,8 @@ export function ForecastStrip({ days }: { days: DailyForecast[] }) {
         return (
           <li
             key={d.date}
-            className="rounded-md border-card bg-card text-card-foreground py-2 px-0.5 flex flex-col items-center gap-1"
-            style={{ boxShadow: "var(--shadow-card)" }}
+            className="rounded-md border bg-card text-card-foreground py-2 px-0.5 flex flex-col items-center gap-1"
+            
           >
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
               {dow}

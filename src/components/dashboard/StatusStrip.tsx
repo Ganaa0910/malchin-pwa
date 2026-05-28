@@ -1,14 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Layers, AlertTriangle, ShieldAlert, WifiOff } from "lucide-react";
 import type { Animal } from "@/types/animal";
 
 const TIERS = [
-  { key: "total", label: "Бүгд", Icon: Layers, color: "var(--fg)" },
-  { key: "warning", label: "Анхаар", Icon: AlertTriangle, color: "var(--warning)" },
-  { key: "danger", label: "Гарсан", Icon: ShieldAlert, color: "var(--destructive)" },
-  { key: "offline", label: "Холбоогүй", Icon: WifiOff, color: "var(--muted-foreground)" },
+  { key: "total", label: "Бүгд" },
+  { key: "warning", label: "Анхаар" },
+  { key: "danger", label: "Гарсан" },
+  { key: "offline", label: "Холбоогүй" },
 ] as const;
 
 export function StatusStrip({ animals }: { animals: Animal[] }) {
@@ -24,23 +23,17 @@ export function StatusStrip({ animals }: { animals: Animal[] }) {
 
   return (
     <div className="grid grid-cols-4 gap-2">
-      {TIERS.map(({ key, label, Icon, color }) => {
+      {TIERS.map(({ key, label }) => {
         const n = counts[key];
         return (
           <div
             key={key}
-            className="rounded-md border-card bg-card text-card-foreground px-2 py-2"
-            style={{ boxShadow: "var(--shadow-card)" }}
+            className="rounded-lg border bg-card text-card-foreground px-3 py-2.5"
           >
-            <div className="flex items-center gap-1.5">
-              <Icon className="size-3.5" style={{ color }} aria-hidden />
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                {label}
-              </span>
-            </div>
-            <div className="font-display text-2xl leading-none mt-1" style={{ color }}>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="text-xl font-semibold tracking-tight mt-1 tabular-nums">
               {n}
-            </div>
+            </p>
           </div>
         );
       })}

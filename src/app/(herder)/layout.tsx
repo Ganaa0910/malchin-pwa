@@ -2,14 +2,9 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { DbBootstrap } from "@/components/db/DbBootstrap";
 
 /**
- * Herder shell — wraps the 6 herder routes.
- *
- * Layout contract:
- *   - Max width 420px, centered.
- *   - Reserve 76px (nav + safe area) at the bottom so content
- *     never hides behind BottomNav.
- *   - Top safe-area handled by individual screens (some need a
- *     custom title bar; the Dashboard's MapView extends to the top edge).
+ * Herder shell — max-w 420px column, sticky BottomNav.
+ * Pages handle their own bottom padding (use `.pb-nav` for scrollable
+ * content; the dashboard goes full-bleed and skips it).
  */
 export default function HerderLayout({
   children,
@@ -17,11 +12,9 @@ export default function HerderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[420px] min-h-dvh">
+    <div className="mx-auto w-full max-w-[420px] relative">
       <DbBootstrap />
-      <div className="pb-[calc(env(safe-area-inset-bottom)+76px)]">
-        {children}
-      </div>
+      {children}
       <BottomNav />
     </div>
   );

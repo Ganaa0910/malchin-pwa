@@ -16,12 +16,12 @@ export default function AdminStub() {
       </div>
       <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
         <div
-          className="size-16 rounded-md border-card bg-card flex items-center justify-center"
-          style={{ boxShadow: "var(--shadow-card)" }}
+          className="size-16 rounded-md border bg-card flex items-center justify-center"
+          
         >
           <ShieldCheck className="size-8 text-primary" />
         </div>
-        <h1 className="font-display text-2xl">{mn.admin.title}</h1>
+        <h1 className="text-2xl">{mn.admin.title}</h1>
         <p className="text-sm text-muted-foreground max-w-xs">
           {mn.admin.description}
         </p>

@@ -26,7 +26,7 @@ export function DeviceAlertsPanel() {
     <section aria-labelledby="device-alerts" className="space-y-2">
       <h2
         id="device-alerts"
-        className="font-display text-lg px-1 flex items-center gap-2"
+        className="text-lg px-1 flex items-center gap-2"
       >
         <Radio className="size-5" aria-hidden />
         {mn.device.title}
@@ -38,8 +38,8 @@ export function DeviceAlertsPanel() {
         ))}
         {lowBatteryCollars.length > 0 && (
           <li
-            className="rounded-md border-card bg-card text-card-foreground p-3"
-            style={{ boxShadow: "var(--shadow-card)" }}
+            className="rounded-md border bg-card text-card-foreground p-3"
+            
           >
             <div className="flex items-center gap-3">
               <span
@@ -73,8 +73,8 @@ function BaseStationItem({ device }: { device: Device }) {
   const Online = device.online ? Wifi : WifiOff;
   return (
     <li
-      className="rounded-md border-card bg-card text-card-foreground p-3"
-      style={{ boxShadow: "var(--shadow-card)" }}
+      className="rounded-md border bg-card text-card-foreground p-3"
+      
     >
       <div className="flex items-center gap-3">
         <span

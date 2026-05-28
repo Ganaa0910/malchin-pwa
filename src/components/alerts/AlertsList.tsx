@@ -37,12 +37,20 @@ const PRIORITY_RANK: Record<AlertPriority, number> = {
   info: 4,
 };
 
-const PRIORITY_STYLE: Record<AlertPriority, { ring: string; text: string }> = {
-  critical: { ring: "border-destructive", text: "text-destructive" },
-  high: { ring: "border-warning", text: "text-warning" },
-  medium: { ring: "border-border", text: "text-foreground" },
-  low: { ring: "border-border", text: "text-muted-foreground" },
-  info: { ring: "border-border", text: "text-muted-foreground" },
+const PRIORITY_ICON: Record<AlertPriority, string> = {
+  critical: "text-destructive",
+  high: "text-warning",
+  medium: "text-foreground",
+  low: "text-muted-foreground",
+  info: "text-muted-foreground",
+};
+
+const PRIORITY_BORDER: Record<AlertPriority, string> = {
+  critical: "border-l-destructive",
+  high: "border-l-warning",
+  medium: "border-l-border",
+  low: "border-l-border",
+  info: "border-l-border",
 };
 
 export function AlertsList() {
@@ -61,14 +69,14 @@ export function AlertsList() {
 
   if (sorted.length === 0) {
     return (
-      <div className="px-5 py-12 text-center">
+      <div className="px-4 py-12 text-center">
         <p className="text-sm text-muted-foreground">{mn.alerts.empty}</p>
       </div>
     );
   }
 
   return (
-    <ul className="px-5 py-3 space-y-2.5">
+    <ul className="px-4 py-3 pb-nav space-y-2">
       {sorted.map((a) => (
         <AlertItem key={a.id} alert={a} onBreach={showBreach} />
       ))}
@@ -84,7 +92,6 @@ function AlertItem({
   onBreach: (id: string) => void;
 }) {
   const Icon = TYPE_ICON[alert.type] ?? AlertTriangle;
-  const style = PRIORITY_STYLE[alert.priority];
   const isBreach = alert.type === "breach" || alert.type === "predator";
 
   async function handleAck() {
@@ -100,38 +107,37 @@ function AlertItem({
   return (
     <li
       className={cn(
-        "rounded-md border-card bg-card text-card-foreground p-3 flex gap-3",
-        alert.acknowledged && "opacity-60",
+        "rounded-md border bg-card text-card-foreground p-3 flex gap-3",
+        "border-l-2",
+        alert.acknowledged
+          ? "opacity-60 border-l-border"
+          : PRIORITY_BORDER[alert.priority],
       )}
-      style={{
-        boxShadow: "var(--shadow-card)",
-        borderLeft: alert.acknowledged ? undefined : `3px solid var(--${alert.priority === "critical" ? "destructive" : alert.priority === "high" ? "warning" : "muted-foreground"})`,
-      }}
     >
-      <span
-        aria-hidden
+      <Icon
         className={cn(
-          "size-10 shrink-0 rounded-full flex items-center justify-center bg-muted",
-          style.text,
+          "size-4 shrink-0 mt-0.5",
+          alert.acknowledged
+            ? "text-muted-foreground"
+            : PRIORITY_ICON[alert.priority],
         )}
-      >
-        <Icon className="size-5" />
-      </span>
+        aria-hidden
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold leading-tight">{alert.title}</p>
+          <p className="text-sm font-medium leading-snug">{alert.title}</p>
           {alert.acknowledged && (
             <CheckCheck
-              className="size-4 text-success shrink-0 mt-0.5"
+              className="size-3.5 text-muted-foreground shrink-0 mt-0.5"
               aria-hidden
             />
           )}
         </div>
-        <p className="text-xs text-muted-foreground leading-snug mt-1 line-clamp-2">
+        <p className="text-xs text-muted-foreground leading-relaxed mt-1 line-clamp-2">
           {alert.message}
         </p>
         <div className="flex items-center justify-between gap-2 mt-2">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {timeAgoMn(alert.createdAt)}
           </span>
           {!alert.acknowledged && (
@@ -140,7 +146,7 @@ function AlertItem({
                 <button
                   type="button"
                   onClick={() => onBreach(alert.id)}
-                  className="tap text-xs font-semibold px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground"
+                  className="text-xs font-medium px-2.5 h-7 rounded-md border border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   Үзэх
                 </button>
@@ -148,7 +154,7 @@ function AlertItem({
               <button
                 type="button"
                 onClick={handleAck}
-                className="tap text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground"
+                className="text-xs font-medium px-2.5 h-7 rounded-md border bg-background hover:bg-accent transition-colors"
               >
                 {mn.alerts.acknowledge}
               </button>

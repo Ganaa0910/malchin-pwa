@@ -46,11 +46,8 @@ export function RoutePlayback({ animal }: { animal: Animal }) {
         </TabsList>
         <TabsContent value={range} className="space-y-3 mt-3">
           <div
-            className="rounded-md border-card overflow-hidden"
-            style={{
-              boxShadow: "var(--shadow-card)",
-              height: "min(48vh, 360px)",
-            }}
+            className="rounded-lg border overflow-hidden"
+            style={{ height: "min(48vh, 360px)" }}
           >
             <MapView
               animals={[animal]}

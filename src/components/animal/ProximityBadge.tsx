@@ -3,9 +3,15 @@ import { mn } from "@/lib/i18n/mn";
 import type { Proximity } from "@/types/animal";
 
 const STYLES: Record<Proximity, string> = {
-  SAFE: "bg-success text-success-foreground",
-  WARNING: "bg-warning text-warning-foreground",
-  DETER: "bg-destructive text-destructive-foreground",
+  SAFE: "border-transparent bg-muted text-muted-foreground",
+  WARNING: "border-warning/30 bg-warning/10 text-warning-foreground",
+  DETER: "border-destructive/30 bg-destructive/10 text-destructive",
+};
+
+const DOT: Record<Proximity, string> = {
+  SAFE: "bg-muted-foreground",
+  WARNING: "bg-warning",
+  DETER: "bg-destructive",
 };
 
 export function ProximityBadge({
@@ -18,13 +24,13 @@ export function ProximityBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full",
-        "text-xs font-semibold uppercase tracking-tight",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border",
+        "text-xs font-medium",
         STYLES[value],
         className,
       )}
     >
-      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-80" />
+      <span aria-hidden className={cn("size-1.5 rounded-full", DOT[value])} />
       {mn.proximity[value]}
     </span>
   );

@@ -74,7 +74,7 @@ export function HerdList() {
   }, [animals]);
 
   return (
-    <div className="px-5 py-3 space-y-3">
+    <div className="px-4 py-3 pb-nav space-y-3">
       <div className="relative">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
@@ -93,7 +93,7 @@ export function HerdList() {
       <div
         role="tablist"
         aria-label="Шүүх"
-        className="flex gap-2 -mx-5 px-5 overflow-x-auto scrollbar-none"
+        className="flex gap-1.5 -mx-4 px-4 overflow-x-auto"
         style={{ scrollbarWidth: "none" }}
       >
         {FILTERS.map(({ key, label }) => {
@@ -106,23 +106,18 @@ export function HerdList() {
               aria-selected={active}
               onClick={() => setFilter(key)}
               className={cn(
-                "shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5",
-                "rounded-full text-sm font-medium border transition-colors",
+                "shrink-0 inline-flex items-center gap-1.5 px-3 h-8",
+                "rounded-md text-sm transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-card-foreground border-border",
+                  ? "bg-secondary text-secondary-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground",
               )}
-              style={{
-                borderRadius: "var(--nav-active-radius)",
-              }}
             >
               {label}
               <span
                 className={cn(
-                  "text-[10px] font-mono px-1.5 py-px rounded-full",
-                  active
-                    ? "bg-primary-foreground/20"
-                    : "bg-muted text-muted-foreground",
+                  "text-[11px] tabular-nums",
+                  active ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 {n}
@@ -153,10 +148,9 @@ function HerdRow({ animal }: { animal: Animal }) {
       <Link
         href={`/herd/${animal.id}`}
         className={cn(
-          "tap flex items-center gap-3 rounded-md border-card bg-card text-card-foreground",
-          "px-3 py-2.5 transition-transform active:scale-[0.99]",
+          "tap flex items-center gap-3 rounded-md border bg-card text-card-foreground",
+          "px-3 py-2.5 hover:bg-accent transition-colors",
         )}
-        style={{ boxShadow: "var(--shadow-card)" }}
       >
         <span
           aria-hidden
@@ -167,7 +161,7 @@ function HerdRow({ animal }: { animal: Animal }) {
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-base leading-tight truncate">
+            <span className="text-base leading-tight truncate">
               {animal.name ?? animal.id}
             </span>
             {animal.name && (

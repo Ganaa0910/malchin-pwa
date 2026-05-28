@@ -46,13 +46,10 @@ export function GeofenceEditor() {
   }
 
   return (
-    <div className="px-5 py-3 space-y-4">
+    <div className="px-4 py-3 pb-nav space-y-4">
       <div
-        className="rounded-md border-card overflow-hidden"
-        style={{
-          boxShadow: "var(--shadow-card)",
-          height: "min(38vh, 280px)",
-        }}
+        className="rounded-lg border overflow-hidden"
+        style={{ height: "min(38vh, 280px)" }}
       >
         <MapView
           animals={animals}
@@ -64,20 +61,17 @@ export function GeofenceEditor() {
 
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="tap w-full" size="lg">
+          <Button className="tap w-full" variant="outline">
             <Plus className="size-4 mr-1" aria-hidden />
             {mn.geofence.addZone}
           </Button>
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="max-w-[420px] mx-auto pb-safe rounded-t-xl"
-          style={{ borderRadius: "var(--radius) var(--radius) 0 0" }}
+          className="max-w-[420px] mx-auto pb-safe"
         >
           <SheetHeader className="px-5">
-            <SheetTitle className="font-display text-2xl">
-              {mn.geofence.addZone}
-            </SheetTitle>
+            <SheetTitle className="text-lg">{mn.geofence.addZone}</SheetTitle>
             <SheetDescription>
               Зурах горим удахгүй. Одоо байгаа бүсүүдийг засварлаж болно.
             </SheetDescription>
@@ -91,31 +85,23 @@ export function GeofenceEditor() {
           return (
             <li
               key={z.id}
-              className="rounded-md border-card bg-card text-card-foreground p-3"
-              style={{ boxShadow: "var(--shadow-card)" }}
+              className="rounded-lg border bg-card text-card-foreground p-3"
             >
               <div className="flex items-center gap-3">
-                <span
-                  aria-hidden
+                <Icon
                   className={cn(
-                    "size-10 shrink-0 rounded-full flex items-center justify-center",
+                    "size-4 shrink-0",
+                    z.type === "forbidden"
+                      ? "text-destructive"
+                      : "text-muted-foreground",
                   )}
-                  style={{
-                    background: z.color
-                      ? `color-mix(in srgb, ${z.color} 25%, transparent)`
-                      : "var(--muted)",
-                    color: z.color ?? "var(--fg)",
-                  }}
-                >
-                  <Icon className="size-5" />
-                </span>
+                  aria-hidden
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-base leading-tight">
-                    {z.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium leading-tight">{z.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {mn.zoneType[z.type]} ·{" "}
-                    <span className="font-mono">
+                    <span className="tabular-nums">
                       {z.coordinates.length} цэг
                     </span>
                   </p>
@@ -126,24 +112,24 @@ export function GeofenceEditor() {
                   aria-label={`${z.name} идэвхжүүлэх`}
                 />
               </div>
-              <dl className="grid grid-cols-2 gap-2 mt-3 text-xs">
-                <div className="rounded-sm bg-muted px-2 py-1.5">
-                  <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <dl className="grid grid-cols-2 gap-3 mt-3 text-xs">
+                <div>
+                  <dt className="text-muted-foreground">
                     {mn.geofence.bufferLabel}
                   </dt>
-                  <dd className="font-mono">{z.bufferM} м</dd>
+                  <dd className="tabular-nums mt-0.5">{z.bufferM} м</dd>
                 </div>
-                <div className="rounded-sm bg-muted px-2 py-1.5">
-                  <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <div>
+                  <dt className="text-muted-foreground">
                     {mn.geofence.deterLabel}
                   </dt>
-                  <dd className="font-mono">{z.deterM} м</dd>
+                  <dd className="tabular-nums mt-0.5">{z.deterM} м</dd>
                 </div>
               </dl>
               <button
                 type="button"
                 onClick={() => setEditing(z)}
-                className="tap mt-2 text-xs font-semibold inline-flex items-center gap-1 text-primary"
+                className="tap mt-2 text-xs font-medium inline-flex items-center gap-1 text-primary hover:underline"
               >
                 <Pencil className="size-3" aria-hidden />
                 Засах
@@ -195,15 +181,9 @@ function ZoneEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="max-w-[420px] mx-auto pb-safe rounded-t-xl"
-        style={{ borderRadius: "var(--radius) var(--radius) 0 0" }}
-      >
+      <SheetContent side="bottom" className="max-w-[420px] mx-auto pb-safe">
         <SheetHeader className="px-5">
-          <SheetTitle className="font-display text-2xl">
-            {zone?.name ?? ""}
-          </SheetTitle>
+          <SheetTitle className="text-lg">{zone?.name ?? ""}</SheetTitle>
           <SheetDescription>
             Анхаарах болон эргүүлэх зайг тохируулна
           </SheetDescription>

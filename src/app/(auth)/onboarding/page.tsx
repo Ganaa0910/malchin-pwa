@@ -48,7 +48,7 @@ export default function OnboardingPage() {
   return (
     <main className="min-h-dvh pt-safe pb-safe flex flex-col px-5">
       <header className="flex items-center justify-between pt-3 pb-4">
-        <span className="font-display text-base">{mn.app.name}</span>
+        <span className="text-base">{mn.app.name}</span>
         <button
           type="button"
           onClick={finish}
@@ -61,12 +61,12 @@ export default function OnboardingPage() {
       <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
         <div
           className="size-24 rounded-full bg-primary/15 flex items-center justify-center"
-          style={{ boxShadow: "var(--shadow-card)" }}
+          
         >
           <step.Icon className="size-12 text-primary" aria-hidden />
         </div>
         <div className="space-y-2 max-w-xs">
-          <h1 className="font-display text-3xl leading-tight">{step.title}</h1>
+          <h1 className="text-3xl leading-tight">{step.title}</h1>
           <p className="text-base text-muted-foreground leading-relaxed">
             {step.body}
           </p>

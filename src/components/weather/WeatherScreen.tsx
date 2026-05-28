@@ -17,11 +17,11 @@ export function WeatherScreen() {
     );
   }
   return (
-    <div className="px-5 py-3 space-y-4">
+    <div className="px-4 py-3 pb-nav space-y-4">
       <WeatherCard weather={weather} />
       <DzudRiskCard risk={weather.dzudRisk} factors={weather.dzudFactors} />
       <section>
-        <h2 className="font-display text-lg mb-2 px-1">
+        <h2 className="text-lg mb-2 px-1">
           {mn.weather.forecastDays}
         </h2>
         <ForecastStrip days={weather.forecast} />

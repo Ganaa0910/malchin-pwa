@@ -37,8 +37,8 @@ export function EventLog({ animal }: { animal: Animal }) {
   if (events.length === 0) {
     return (
       <section className="space-y-2">
-        <h2 className="font-display text-lg px-1">{mn.animal.events}</h2>
-        <p className="text-sm text-muted-foreground text-center py-6 rounded-md border-card bg-card">
+        <h2 className="text-lg px-1">{mn.animal.events}</h2>
+        <p className="text-sm text-muted-foreground text-center py-6 rounded-md border bg-card">
           Түүх байхгүй
         </p>
       </section>
@@ -47,15 +47,15 @@ export function EventLog({ animal }: { animal: Animal }) {
 
   return (
     <section className="space-y-2">
-      <h2 className="font-display text-lg px-1">{mn.animal.events}</h2>
+      <h2 className="text-lg px-1">{mn.animal.events}</h2>
       <ul className="space-y-2">
         {events.map((e) => {
           const Icon = TYPE_ICON[e.type] ?? AlertTriangle;
           return (
             <li
               key={e.id}
-              className="rounded-md border-card bg-card text-card-foreground p-3 flex gap-3"
-              style={{ boxShadow: "var(--shadow-card)" }}
+              className="rounded-md border bg-card text-card-foreground p-3 flex gap-3"
+              
             >
               <span
                 aria-hidden

@@ -8,7 +8,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
-import { ThemeSwitcher } from "@/components/settings/ThemeSwitcher";
 import { mn } from "@/lib/i18n/mn";
 import owner from "@/data/owner.json";
 
@@ -49,18 +48,11 @@ export default function ProfilePage() {
   return (
     <>
       <ScreenHeader title={mn.nav.profile} />
-      <div className="px-5 pt-2 pb-6 space-y-6">
-        <section
-          className="rounded-md border-card bg-card text-card-foreground p-4 space-y-3"
-          style={{ boxShadow: "var(--shadow-card)" }}
-        >
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              {mn.profile.owner}
-            </p>
-            <p className="font-display text-xl mt-0.5">{owner.name}</p>
-          </div>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <div className="px-4 pt-2 pb-nav space-y-6">
+        <section className="rounded-lg border bg-card text-card-foreground p-4">
+          <p className="text-xs text-muted-foreground">{mn.profile.owner}</p>
+          <p className="text-lg font-semibold mt-0.5">{owner.name}</p>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-4">
             <dt className="text-muted-foreground">{mn.profile.phone}</dt>
             <dd className="font-mono text-right">{owner.phone}</dd>
             <dt className="text-muted-foreground">{mn.profile.aimag}</dt>
@@ -74,35 +66,25 @@ export default function ProfilePage() {
           </dl>
         </section>
 
-        <section aria-label={mn.profile.theme}>
-          <h2 className="font-display text-lg mb-3 px-1">{mn.profile.theme}</h2>
-          <ThemeSwitcher />
-        </section>
-
-        <section aria-label="Бусад">
-          <h2 className="font-display text-lg mb-3 px-1">Бусад</h2>
-          <ul className="space-y-2">
+        <section aria-label="Бусад" className="space-y-2">
+          <h2 className="text-sm font-medium text-muted-foreground px-1">
+            Бусад
+          </h2>
+          <ul className="rounded-lg border bg-card divide-y overflow-hidden">
             {LINKS.map(({ href, label, sub, Icon }) => (
               <li key={href}>
                 <Link
                   href={href}
-                  className="tap flex items-center gap-3 rounded-md border-card bg-card text-card-foreground px-3 py-2.5 transition-transform active:scale-[0.99]"
-                  style={{ boxShadow: "var(--shadow-card)" }}
+                  className="tap flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
                 >
-                  <span
+                  <Icon
+                    className="size-4 text-muted-foreground shrink-0"
                     aria-hidden
-                    className="size-9 shrink-0 rounded-full bg-muted text-muted-foreground flex items-center justify-center"
-                  >
-                    <Icon className="size-4" />
+                  />
+                  <span className="flex-1 min-w-0 text-sm font-medium">
+                    {label}
                   </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm font-semibold leading-tight">
-                      {label}
-                    </span>
-                    <span className="block text-xs text-muted-foreground leading-tight mt-0.5">
-                      {sub}
-                    </span>
-                  </span>
+                  <span className="text-xs text-muted-foreground">{sub}</span>
                   <ChevronRight
                     className="size-4 text-muted-foreground shrink-0"
                     aria-hidden
@@ -113,8 +95,8 @@ export default function ProfilePage() {
           </ul>
         </section>
 
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground text-center pt-2 font-mono">
-          Малчин v0.0.1 · MVP
+        <p className="text-xs text-muted-foreground text-center pt-2 font-mono">
+          Малчин v0.0.1
         </p>
       </div>
     </>
