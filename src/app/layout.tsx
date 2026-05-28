@@ -8,6 +8,7 @@ import {
   Mulish,
 } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const sora = Sora({
@@ -85,7 +86,7 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full bg-background text-foreground font-body">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
