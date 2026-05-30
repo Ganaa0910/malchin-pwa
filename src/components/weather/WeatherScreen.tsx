@@ -24,7 +24,11 @@ export function WeatherScreen() {
         <div className="flex items-baseline justify-between mb-2 px-1">
           <h2 className="text-lg">{mn.weather.forecastDays}</h2>
           <span className="text-[11px] text-muted-foreground">
-            {source === "weathernext" ? "WeatherNext 2" : "Офлайн өгөгдөл"}
+            {source === "weathernext"
+              ? "WeatherNext 2"
+              : source === "open-meteo"
+                ? "Open-Meteo"
+                : "Офлайн өгөгдөл"}
           </span>
         </div>
         <ForecastStrip days={weather.forecast} />

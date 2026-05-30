@@ -23,7 +23,8 @@
  */
 import "server-only";
 import { BigQuery } from "@google-cloud/bigquery";
-import type { Weather, DailyForecast, Condition, DzudRisk } from "@/types/weather";
+import type { Weather, DailyForecast, Condition } from "@/types/weather";
+import { deriveDzud } from "./derive";
 
 // --- Schema field names — adjust here if your dataset differs -----------------
 const COLS = {
@@ -137,33 +138,6 @@ function snowFrom(precipMm: number, tempMaxC: number): number {
   return Math.round(precipMm * 7 * 10) / 10;
 }
 
-function dzud(
-  days: DailyForecast[],
-): { risk: DzudRisk; factors: string[] } {
-  const next3 = days.slice(0, 3);
-  const totalSnow = next3.reduce((s, d) => s + d.snowCm, 0);
-  const coldNights = next3.filter((d) => d.tempMinC <= -10).length;
-  const highWind = next3.some((d) => d.windKmh >= 35);
-
-  let score = 0;
-  if (totalSnow >= 30) score += 3;
-  else if (totalSnow >= 15) score += 2;
-  else if (totalSnow >= 5) score += 1;
-  score += coldNights;
-  if (highWind) score += 1;
-
-  const risk: DzudRisk =
-    score >= 6 ? "extreme" : score >= 4 ? "high" : score >= 3 ? "elevated" : score >= 1 ? "moderate" : "low";
-
-  const factors: string[] = [];
-  if (totalSnow > 0) factors.push(`Гурван өдрийн цас ~${Math.round(totalSnow)}см`);
-  const minNight = Math.min(...next3.map((d) => d.tempMinC));
-  if (minNight <= 0) factors.push(`Шөнийн хүйтэн ${Math.round(minNight)}°C хүртэл`);
-  if (highWind) factors.push("Хүчтэй салхи 35км/ц-ээс дээш");
-  if (factors.length === 0) factors.push("Эрсдэл багатай");
-  return { risk, factors };
-}
-
 /** Aggregate 6-hourly forecast rows into the app's daily Weather shape. */
 function toWeather(
   rows: ForecastRow[],
@@ -199,7 +173,7 @@ function toWeather(
 
   const now = rows[0];
   const currentTempC = Math.round(kelvinToC(now?.t2m ?? 273.15) * 10) / 10;
-  const { risk, factors } = dzud(days);
+  const { risk, factors } = deriveDzud(days);
 
   return {
     locationName,

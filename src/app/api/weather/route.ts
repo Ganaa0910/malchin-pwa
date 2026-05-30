@@ -3,6 +3,8 @@ import {
   fetchWeatherNextWeather,
   isWeatherNextConfigured,
 } from "@/lib/weather/weathernext";
+import { fetchOpenMeteoWeather } from "@/lib/weather/openmeteo";
+import type { Weather } from "@/types/weather";
 
 // BigQuery client needs Node APIs (not edge).
 export const runtime = "nodejs";
@@ -12,18 +14,13 @@ const DEFAULT = { lat: 48.3656312, lng: 106.7407558, name: "Төв, Батсүм
 
 /**
  * GET /api/weather?lat=&lng=&name=
- * Returns a Weather object sourced from WeatherNext 2 (BigQuery).
- * If WeatherNext isn't configured or the query fails, returns 503 so the
- * client falls back to the seeded/offline weather.
+ * Returns a Weather object. Source priority:
+ *   1. WeatherNext 2 (BigQuery) when configured,
+ *   2. Open-Meteo (free, no key) as a live fallback,
+ *   3. otherwise 503 → client falls back to seeded/offline weather.
+ * The chosen provider is reported in the `X-Weather-Source` header.
  */
 export async function GET(request: Request) {
-  if (!isWeatherNextConfigured()) {
-    return NextResponse.json(
-      { error: "weathernext_not_configured" },
-      { status: 503 },
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const lat = Number(searchParams.get("lat") ?? DEFAULT.lat);
   const lng = Number(searchParams.get("lng") ?? DEFAULT.lng);
@@ -33,16 +30,32 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "invalid_coords" }, { status: 400 });
   }
 
-  try {
-    const weather = await fetchWeatherNextWeather(lat, lng, name);
-    return NextResponse.json(weather, {
-      headers: {
-        // WeatherNext init times update every 6h; cache at the edge for 30 min.
-        "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
-      },
-    });
-  } catch (err) {
-    console.error("[weathernext] query failed:", err);
-    return NextResponse.json({ error: "weathernext_query_failed" }, { status: 503 });
+  let weather: Weather | null = null;
+  let source = "open-meteo";
+
+  if (isWeatherNextConfigured()) {
+    try {
+      weather = await fetchWeatherNextWeather(lat, lng, name);
+      source = "weathernext";
+    } catch (err) {
+      console.error("[weathernext] query failed, falling back to open-meteo:", err);
+    }
   }
+
+  if (!weather) {
+    try {
+      weather = await fetchOpenMeteoWeather(lat, lng, name);
+      source = "open-meteo";
+    } catch (err) {
+      console.error("[open-meteo] fetch failed:", err);
+      return NextResponse.json({ error: "all_providers_failed" }, { status: 503 });
+    }
+  }
+
+  return NextResponse.json(weather, {
+    headers: {
+      "X-Weather-Source": source,
+      "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+    },
+  });
 }
