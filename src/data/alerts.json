@@ -135,21 +135,6 @@
     "lng": 106.7583908
   },
   {
-    "id": "AL-010",
-    "type": "predator",
-    "priority": "critical",
-    "title": "Чоно ойртсон",
-    "message": "Сүргийн хойд талд (1.2 км) сэжигтэй хөдөлгөөн. Магадгүй чоно.",
-    "animalId": null,
-    "deviceId": null,
-    "zoneId": "zone-main",
-    "createdAt": "2026-05-27T23:52:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": false,
-    "lat": 48.3776312,
-    "lng": 106.7367558
-  },
-  {
     "id": "AL-011",
     "type": "missing",
     "priority": "high",
