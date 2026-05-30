@@ -100,6 +100,12 @@ body {
 .pb-nav {
   padding-bottom: calc(env(safe-area-inset-bottom) + 76px);
 }
+/* Desktop swaps BottomNav for SideNav, so the bottom clearance isn't needed. */
+@media (min-width: 768px) {
+  .pb-nav {
+    padding-bottom: 1.5rem;
+  }
+}
 .h-page {
   height: 100dvh;
 }

@@ -1,10 +1,14 @@
+import { SideNav } from "@/components/nav/SideNav";
 import { BottomNav } from "@/components/nav/BottomNav";
+import { HerderMain } from "@/components/nav/HerderMain";
 import { DbBootstrap } from "@/components/db/DbBootstrap";
 
 /**
- * Herder shell — max-w 420px column, sticky BottomNav.
- * Pages handle their own bottom padding (use `.pb-nav` for scrollable
- * content; the dashboard goes full-bleed and skips it).
+ * Herder shell — responsive.
+ * - Mobile: single column, sticky BottomNav at the bottom.
+ * - Desktop (md+): left SideNav rail + main content filling the rest.
+ * HerderMain decides per-route whether content is full-bleed (map) or a
+ * centered column (lists). Scrollable pages use `.pb-nav` for bottom padding.
  */
 export default function HerderLayout({
   children,
@@ -12,9 +16,10 @@ export default function HerderLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[420px] relative">
+    <div className="md:flex md:min-h-dvh">
       <DbBootstrap />
-      {children}
+      <SideNav />
+      <HerderMain>{children}</HerderMain>
       <BottomNav />
     </div>
   );
