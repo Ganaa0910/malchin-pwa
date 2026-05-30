@@ -53,6 +53,53 @@ export function minDistanceToPolygonM(
   return min;
 }
 
+/** Distance in meters from a point to a segment, via a local equirectangular
+ *  projection centred on the point (accurate at herding scales). */
+function pointToSegmentM(
+  lat: number,
+  lng: number,
+  aLat: number,
+  aLng: number,
+  bLat: number,
+  bLng: number,
+): number {
+  const toRad = Math.PI / 180;
+  const mPerDegLat = 111_320;
+  const mPerDegLng = 111_320 * Math.cos(lat * toRad);
+  // Project onto a plane with the query point at the origin.
+  const ax = (aLng - lng) * mPerDegLng,
+    ay = (aLat - lat) * mPerDegLat;
+  const bx = (bLng - lng) * mPerDegLng,
+    by = (bLat - lat) * mPerDegLat;
+  const dx = bx - ax,
+    dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 > 0 ? -(ax * dx + ay * dy) / len2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(ax + t * dx, ay + t * dy);
+}
+
+/**
+ * Distance in meters from a point to a polygon: 0 if inside, otherwise the
+ * distance to the nearest edge. Use for "how far is this animal from the zone".
+ */
+export function distanceToPolygonM(
+  lat: number,
+  lng: number,
+  polygon: readonly (readonly [number, number])[],
+): number {
+  if (polygon.length < 3) return minDistanceToPolygonM(lat, lng, polygon);
+  if (pointInPolygon(lat, lng, polygon)) return 0;
+  let min = Infinity;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [la, lo] = polygon[i];
+    const [lb, lob] = polygon[j];
+    const d = pointToSegmentM(lat, lng, la, lo, lb, lob);
+    if (d < min) min = d;
+  }
+  return min;
+}
+
 /**
  * 3-tier proximity model.
  *

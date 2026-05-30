@@ -9,6 +9,7 @@ import {
   Polygon,
   Polyline,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Satellite, Map as MapIcon, Mountain, Check } from "lucide-react";
@@ -73,6 +74,26 @@ export interface MapViewLeafletProps {
   focusToken?: number;
   focusLat?: number;
   focusLng?: number;
+  /** User-drawn custom polygons to render (selectable). */
+  customPolygons?: { id: string; coordinates: [number, number][]; color?: string }[];
+  selectedPolygonId?: string | null;
+  onPolygonClick?: (id: string) => void;
+  /** Draw mode: in-progress polygon vertices + map-click handler. */
+  draftPolygon?: [number, number][];
+  onMapClick?: (lat: number, lng: number) => void;
+}
+
+function MapClickHandler({
+  onClick,
+}: {
+  onClick: (lat: number, lng: number) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      onClick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
 }
 
 function calcBounds(
@@ -190,6 +211,11 @@ export default function MapViewLeaflet({
   focusToken = 0,
   focusLat,
   focusLng,
+  customPolygons,
+  selectedPolygonId = null,
+  onPolygonClick,
+  draftPolygon,
+  onMapClick,
 }: MapViewLeafletProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [layer, setLayer] = useState<LayerKey>(readSavedLayer);
@@ -228,6 +254,7 @@ export default function MapViewLeaflet({
       <BoundsFlyer bounds={bounds} />
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
       <FocusController token={focusToken} lat={focusLat} lng={focusLng} />
+      {onMapClick && <MapClickHandler onClick={onMapClick} />}
       <TileLayer
         key={layer}
         url={tileUrl(layer)}
@@ -235,6 +262,63 @@ export default function MapViewLeaflet({
         subdomains={TILE_SUBDOMAINS}
         maxZoom={20}
       />
+
+      {/* User-drawn custom polygons */}
+      {customPolygons?.map((poly) => {
+        const color = poly.color ?? "#16a34a";
+        const selected = poly.id === selectedPolygonId;
+        return (
+          <Polygon
+            key={poly.id}
+            positions={poly.coordinates}
+            pathOptions={{
+              color,
+              fillColor: color,
+              fillOpacity: selected ? 0.25 : 0.12,
+              weight: selected ? 3 : 1.75,
+              opacity: selected ? 1 : 0.8,
+            }}
+            eventHandlers={{ click: () => onPolygonClick?.(poly.id) }}
+          />
+        );
+      })}
+
+      {/* In-progress draft polygon */}
+      {draftPolygon && draftPolygon.length > 0 && (
+        <>
+          {draftPolygon.length >= 3 && (
+            <Polygon
+              positions={draftPolygon}
+              pathOptions={{
+                color: "#16a34a",
+                fillColor: "#16a34a",
+                fillOpacity: 0.15,
+                weight: 2,
+                dashArray: "6 4",
+              }}
+            />
+          )}
+          {draftPolygon.length < 3 && draftPolygon.length > 1 && (
+            <Polyline
+              positions={draftPolygon}
+              pathOptions={{ color: "#16a34a", weight: 2, dashArray: "6 4" }}
+            />
+          )}
+          {draftPolygon.map((pt, i) => (
+            <CircleMarker
+              key={`draft-${i}`}
+              center={pt}
+              radius={5}
+              pathOptions={{
+                color: "#ffffff",
+                fillColor: "#16a34a",
+                fillOpacity: 1,
+                weight: 2,
+              }}
+            />
+          ))}
+        </>
+      )}
 
       {zones
         .filter((z) => z.active)

@@ -1,4 +1,4 @@
-import { MapPinned, Layers, Bell, CloudSun, UserRound } from "lucide-react";
+import { MapPinned, Layers, Hexagon, Bell, CloudSun, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { mn } from "@/lib/i18n/mn";
 
@@ -17,6 +17,12 @@ export const NAV_TABS: NavTab[] = [
     label: mn.nav.herd,
     Icon: Layers,
     match: (p) => p.startsWith("/herd"),
+  },
+  {
+    href: "/polygon",
+    label: mn.nav.polygon,
+    Icon: Hexagon,
+    match: (p) => p.startsWith("/polygon"),
   },
   {
     href: "/alerts",

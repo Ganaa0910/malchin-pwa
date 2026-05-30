@@ -5,6 +5,7 @@ import type { Alert } from "@/types/alert";
 import type { Zone } from "@/types/zone";
 import type { Weather } from "@/types/weather";
 import type { Owner, Herd } from "@/types/owner";
+import type { CustomPolygon } from "@/types/polygon";
 
 export interface EventLog {
   id?: number;
@@ -51,6 +52,7 @@ export class MalchinDB extends Dexie {
   weather!: Table<WeatherRow, string>;
   events!: Table<EventLog, number>;
   syncQueue!: Table<SyncOp, number>;
+  polygons!: Table<CustomPolygon, string>;
 
   constructor() {
     super("malchin");
@@ -65,6 +67,10 @@ export class MalchinDB extends Dexie {
       weather: "id",
       events: "++id, animalId, type, timestamp",
       syncQueue: "++id, kind, createdAt",
+    });
+    // v2 — user-drawn custom polygons (not seeded; survives reseeds).
+    this.version(2).stores({
+      polygons: "id, createdAt",
     });
   }
 }

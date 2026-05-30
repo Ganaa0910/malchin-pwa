@@ -5,7 +5,7 @@ import { mn } from "@/lib/i18n/mn";
 export default function WeatherPage() {
   return (
     <>
-      <ScreenHeader title={mn.nav.weather} subtitle="Хэнтий · Хэрлэн" />
+      <ScreenHeader title={mn.nav.weather} subtitle="Төв · Батсүмбэр" />
       <WeatherScreen />
     </>
   );

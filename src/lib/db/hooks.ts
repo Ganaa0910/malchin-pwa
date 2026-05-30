@@ -14,6 +14,7 @@ import type { Zone } from "@/types/zone";
 import type { Device } from "@/types/device";
 import type { Owner } from "@/types/owner";
 import type { Weather } from "@/types/weather";
+import type { CustomPolygon } from "@/types/polygon";
 
 /* Seed JSON serves as the SSR-friendly default — useLiveQuery
    swaps to live Dexie data once the seeder has finished. */
@@ -67,6 +68,16 @@ export function useDevice(id: string | null | undefined): Device | undefined {
     () => (id ? getDb().devices.get(id) : undefined),
     [id],
     id ? INITIAL_DEVICES.find((d) => d.id === id) : undefined,
+  );
+}
+
+export function usePolygons(): CustomPolygon[] {
+  return (
+    useLiveQuery(
+      () => getDb().polygons.orderBy("createdAt").toArray(),
+      [],
+      [] as CustomPolygon[],
+    ) ?? []
   );
 }
 
