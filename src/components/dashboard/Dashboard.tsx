@@ -98,10 +98,9 @@ export function Dashboard() {
             "size-11 rounded-full border bg-background shadow-sm",
             "flex items-center justify-center",
             "hover:bg-accent active:scale-95 transition",
+            // Sits just above the urgent rail in both layouts.
+            "bottom-[calc(env(safe-area-inset-bottom)+218px)] md:bottom-[124px]",
           )}
-          style={{
-            bottom: "calc(env(safe-area-inset-bottom) + 218px)",
-          }}
         >
           <Crosshair className="size-5" />
         </button>
@@ -117,7 +116,6 @@ export function Dashboard() {
               setFocus((f) => ({ token: f.token + 1, lat: a.lat, lng: a.lng }));
             }
           }}
-          bottomOffset={84}
         />
       </div>
 

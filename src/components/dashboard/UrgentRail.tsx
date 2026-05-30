@@ -32,12 +32,10 @@ export function UrgentRail({
   animals,
   selectedId,
   onSelect,
-  bottomOffset = 76,
 }: {
   animals: Animal[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  bottomOffset?: number;
 }) {
   const urgent = useMemo(
     () =>
@@ -57,8 +55,11 @@ export function UrgentRail({
   return (
     <div
       aria-label="Анхаар хэрэгтэй мал"
-      className="pointer-events-none absolute inset-x-0 z-20"
-      style={{ bottom: `calc(env(safe-area-inset-bottom) + ${bottomOffset}px)` }}
+      className={cn(
+        "pointer-events-none absolute inset-x-0 z-20",
+        // Mobile clears the bottom nav; desktop has none, so sit near the bottom.
+        "bottom-[calc(env(safe-area-inset-bottom)+84px)] md:bottom-4",
+      )}
     >
       <ul
         className="pointer-events-auto flex gap-2.5 px-4 pb-3 overflow-x-auto snap-x snap-mandatory"
