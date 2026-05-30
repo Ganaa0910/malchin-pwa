@@ -14,7 +14,7 @@ export const mn = {
     system: "Систем",
   },
   nav: {
-    home: "Нутаг",
+    home: "Байршил",
     herd: "Сүрэг",
     alerts: "Мэдэгдэл",
     weather: "Цаг агаар",
