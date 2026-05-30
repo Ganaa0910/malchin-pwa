@@ -7,6 +7,12 @@ export const mn = {
     name: "Малчин",
     tagline: "GPS",
   },
+  theme: {
+    label: "Харагдац",
+    light: "Цайвар",
+    dark: "Бараан",
+    system: "Систем",
+  },
   nav: {
     home: "Нутаг",
     herd: "Сүрэг",

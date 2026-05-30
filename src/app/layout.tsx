@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { RegisterPWA } from "@/components/pwa/RegisterPWA";
 import { OfflineBadge } from "@/components/pwa/OfflineBadge";
 import { BreachOverlay } from "@/components/alerts/BreachOverlay";
@@ -30,7 +31,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#16a34a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#16a34a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -44,6 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
+      suppressHydrationWarning
       className={cn(
         geistSans.variable,
         geistMono.variable,
@@ -51,10 +56,12 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full bg-background text-foreground">
-        <RegisterPWA />
-        <OfflineBadge />
-        {children}
-        <BreachOverlay />
+        <ThemeProvider>
+          <RegisterPWA />
+          <OfflineBadge />
+          {children}
+          <BreachOverlay />
+        </ThemeProvider>
       </body>
     </html>
   );

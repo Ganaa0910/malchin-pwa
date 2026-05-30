@@ -8,6 +8,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { mn } from "@/lib/i18n/mn";
 import owner from "@/data/owner.json";
 
@@ -64,6 +65,13 @@ export default function ProfilePage() {
             <dt className="text-muted-foreground">{mn.profile.baseCamp}</dt>
             <dd className="text-right">{owner.baseName}</dd>
           </dl>
+        </section>
+
+        <section aria-label={mn.theme.label} className="space-y-2">
+          <h2 className="text-sm font-medium text-muted-foreground px-1">
+            {mn.theme.label}
+          </h2>
+          <ThemeToggle className="w-full" />
         </section>
 
         <section aria-label="Бусад" className="space-y-2">

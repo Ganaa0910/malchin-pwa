@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { MapPinned } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NAV_TABS } from "./tabs";
 
 /** Desktop primary nav — left rail. Hidden below md, where BottomNav takes over. */
@@ -56,6 +57,11 @@ export function SideNav() {
           })}
         </ul>
       </nav>
+
+      {/* Theme */}
+      <div className="border-t p-3">
+        <ThemeToggle className="w-full" />
+      </div>
     </aside>
   );
 }
