@@ -29,11 +29,11 @@ const ZONE_COLOR: Record<Zone["type"], string> = {
   buffer: "#a1a1aa",
 };
 
-const TILE_URL =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+// Google Maps roadmap tiles (lyrs=m). No API key; fine for local/demo use.
+const TILE_URL = "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+const TILE_SUBDOMAINS = ["mt0", "mt1", "mt2", "mt3"];
 
-const ATTR =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const ATTR = '&copy; <a href="https://www.google.com/maps">Google</a>';
 
 export interface MapViewLeafletProps {
   animals: Animal[];
@@ -198,8 +198,8 @@ export default function MapViewLeaflet({
       <TileLayer
         url={TILE_URL}
         attribution={ATTR}
-        subdomains="abcd"
-        maxZoom={19}
+        subdomains={TILE_SUBDOMAINS}
+        maxZoom={20}
       />
 
       {zones

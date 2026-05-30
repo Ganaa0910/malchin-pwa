@@ -23,8 +23,8 @@ export function Dashboard() {
     [animals, selectedId],
   );
 
-  const baseLat = owner?.baseLat ?? 48.05;
-  const baseLng = owner?.baseLng ?? 109.65;
+  const baseLat = owner?.baseLat ?? 48.3656312;
+  const baseLng = owner?.baseLng ?? 106.7407558;
 
   const counts = useMemo(() => {
     const c = { total: animals.length, warning: 0, danger: 0, offline: 0 };
@@ -70,7 +70,7 @@ export function Dashboard() {
           >
             <div className="flex items-center justify-between px-4 py-2.5 border-b">
               <p className="text-sm font-medium">
-                {owner?.aimag ?? "Хэнтий"} · {owner?.sum ?? "Хэрлэн"}
+                {owner?.aimag ?? "Төв"} · {owner?.sum ?? "Батсүмбэр"}
               </p>
               <p className="text-xs text-muted-foreground tabular-nums">
                 {counts.total} мал

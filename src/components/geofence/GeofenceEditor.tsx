@@ -32,8 +32,8 @@ export function GeofenceEditor() {
   const owner = useOwner();
   const [editing, setEditing] = useState<Zone | null>(null);
 
-  const baseLat = owner?.baseLat ?? 48.05;
-  const baseLng = owner?.baseLng ?? 109.65;
+  const baseLat = owner?.baseLat ?? 48.3656312;
+  const baseLng = owner?.baseLng ?? 106.7407558;
 
   async function toggleActive(zone: Zone, active: boolean) {
     await getDb().zones.update(zone.id, { active });

@@ -11,8 +11,8 @@
     "createdAt": "2026-05-27T23:37:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.047934,
-    "lng": 109.654728
+    "lat": 48.3635652,
+    "lng": 106.7454838
   },
   {
     "id": "AL-002",
@@ -26,8 +26,8 @@
     "createdAt": "2026-05-27T23:30:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.056631,
-    "lng": 109.637566
+    "lat": 48.3722622,
+    "lng": 106.7283218
   },
   {
     "id": "AL-003",
@@ -41,8 +41,8 @@
     "createdAt": "2026-05-27T23:39:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.052841,
-    "lng": 109.658683
+    "lat": 48.3684722,
+    "lng": 106.7494388
   },
   {
     "id": "AL-004",
@@ -56,8 +56,8 @@
     "createdAt": "2026-05-27T23:55:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.037154,
-    "lng": 109.636433
+    "lat": 48.3527852,
+    "lng": 106.7271888
   },
   {
     "id": "AL-005",
@@ -71,8 +71,8 @@
     "createdAt": "2026-05-27T23:35:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.049989,
-    "lng": 109.666835
+    "lat": 48.3656202,
+    "lng": 106.7575908
   },
   {
     "id": "AL-006",
@@ -86,8 +86,8 @@
     "createdAt": "2026-05-27T22:36:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.034595,
-    "lng": 109.639246
+    "lat": 48.3502262,
+    "lng": 106.7300018
   },
   {
     "id": "AL-007",
@@ -101,8 +101,8 @@
     "createdAt": "2026-05-27T23:06:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.040043,
-    "lng": 109.635264
+    "lat": 48.3556742,
+    "lng": 106.7260198
   },
   {
     "id": "AL-008",
@@ -116,8 +116,8 @@
     "createdAt": "2026-05-27T20:19:00.000Z",
     "resolvedAt": null,
     "acknowledged": true,
-    "lat": 48.046202,
-    "lng": 109.636739
+    "lat": 48.3618332,
+    "lng": 106.7274948
   },
   {
     "id": "AL-009",
@@ -131,8 +131,8 @@
     "createdAt": "2026-05-27T20:37:00.000Z",
     "resolvedAt": null,
     "acknowledged": true,
-    "lat": 48.040361,
-    "lng": 109.667635
+    "lat": 48.3559922,
+    "lng": 106.7583908
   },
   {
     "id": "AL-010",
@@ -146,8 +146,8 @@
     "createdAt": "2026-05-27T23:52:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.062,
-    "lng": 109.646
+    "lat": 48.3776312,
+    "lng": 106.7367558
   },
   {
     "id": "AL-011",
@@ -161,8 +161,8 @@
     "createdAt": "2026-05-27T21:00:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.048208,
-    "lng": 109.669866
+    "lat": 48.3638392,
+    "lng": 106.7606218
   },
   {
     "id": "AL-012",
@@ -176,8 +176,8 @@
     "createdAt": "2026-05-27T19:36:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.053255,
-    "lng": 109.636798
+    "lat": 48.3688862,
+    "lng": 106.7275538
   },
   {
     "id": "AL-013",
@@ -217,7 +217,7 @@
     "createdAt": "2026-05-27T20:32:00.000Z",
     "resolvedAt": null,
     "acknowledged": false,
-    "lat": 48.058418,
-    "lng": 109.646938
+    "lat": 48.3740492,
+    "lng": 106.7376938
   }
 ]
