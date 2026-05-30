@@ -60,21 +60,6 @@
     "lng": 106.7271888
   },
   {
-    "id": "AL-005",
-    "type": "breach",
-    "priority": "critical",
-    "title": "A-236 хил гарсан",
-    "message": "үхэр A-236 бэлчээрээс 1251 м-ийн зайд. Эргүүлэх хэрэгтэй.",
-    "animalId": "A-236",
-    "deviceId": "D-236",
-    "zoneId": "zone-main",
-    "createdAt": "2026-05-27T23:35:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": false,
-    "lat": 48.3656202,
-    "lng": 106.7575908
-  },
-  {
     "id": "AL-006",
     "type": "low-battery",
     "priority": "high",
@@ -105,36 +90,6 @@
     "lng": 106.7260198
   },
   {
-    "id": "AL-008",
-    "type": "low-battery",
-    "priority": "high",
-    "title": "D-014 батарей 5%",
-    "message": "хонь A-014-ийн GPS-ийн цэнэг 5% болсон. Цэнэглэе.",
-    "animalId": "A-014",
-    "deviceId": "D-014",
-    "zoneId": null,
-    "createdAt": "2026-05-27T20:19:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": true,
-    "lat": 48.3618332,
-    "lng": 106.7274948
-  },
-  {
-    "id": "AL-009",
-    "type": "low-battery",
-    "priority": "high",
-    "title": "D-038 батарей 10%",
-    "message": "хонь A-038-ийн GPS-ийн цэнэг 10% болсон. Цэнэглэе.",
-    "animalId": "A-038",
-    "deviceId": "D-038",
-    "zoneId": null,
-    "createdAt": "2026-05-27T20:37:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": true,
-    "lat": 48.3559922,
-    "lng": 106.7583908
-  },
-  {
     "id": "AL-011",
     "type": "missing",
     "priority": "high",
@@ -150,34 +105,6 @@
     "lng": 106.7606218
   },
   {
-    "id": "AL-012",
-    "type": "missing",
-    "priority": "high",
-    "title": "A-026 холбоогүй",
-    "message": "хонь A-026-ийн GPS дохио 258 мин өмнө тасарсан.",
-    "animalId": "A-026",
-    "deviceId": "D-026",
-    "zoneId": null,
-    "createdAt": "2026-05-27T19:36:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": false,
-    "lat": 48.3688862,
-    "lng": 106.7275538
-  },
-  {
-    "id": "AL-013",
-    "type": "base-station",
-    "priority": "medium",
-    "title": "Гол станц богино хугацаанд тасарсан",
-    "message": "BS-001 станц 6 минут офлайн байв. Одоо хэвийн.",
-    "animalId": null,
-    "deviceId": "BS-001",
-    "zoneId": null,
-    "createdAt": "2026-05-27T21:00:00.000Z",
-    "resolvedAt": "2026-05-27T21:07:00.000Z",
-    "acknowledged": true
-  },
-  {
     "id": "AL-014",
     "type": "weather",
     "priority": "medium",
@@ -189,20 +116,5 @@
     "createdAt": "2026-05-27T23:15:00.000Z",
     "resolvedAt": null,
     "acknowledged": false
-  },
-  {
-    "id": "AL-015",
-    "type": "health",
-    "priority": "low",
-    "title": "A-069 доголж байна",
-    "message": "GPS-ийн дагуу хөдөлгөөн удааширсан. Биеийг нь шалгая.",
-    "animalId": "A-069",
-    "deviceId": "D-069",
-    "zoneId": null,
-    "createdAt": "2026-05-27T20:32:00.000Z",
-    "resolvedAt": null,
-    "acknowledged": false,
-    "lat": 48.3740492,
-    "lng": 106.7376938
   }
 ]

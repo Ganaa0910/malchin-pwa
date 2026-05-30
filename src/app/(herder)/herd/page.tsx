@@ -5,7 +5,7 @@ import { mn } from "@/lib/i18n/mn";
 export default function HerdPage() {
   return (
     <>
-      <ScreenHeader title={mn.herd.title} subtitle="Бүгд 248" />
+      <ScreenHeader title={mn.herd.title} subtitle="Бүгд 10" />
       <HerdList />
     </>
   );
