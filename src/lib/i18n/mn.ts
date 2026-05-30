@@ -13,6 +13,12 @@ export const mn = {
     dark: "Бараан",
     system: "Систем",
   },
+  map: {
+    layer: "Давхарга",
+    satellite: "Хиймэл дагуул",
+    roadmap: "Энгийн зураг",
+    terrain: "Газрын гадаргуу",
+  },
   nav: {
     home: "Байршил",
     herd: "Сүрэг",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngBoundsLiteral, Map as LeafletMap } from "leaflet";
 import {
   MapContainer,
@@ -11,9 +11,13 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { Satellite, Map as MapIcon, Mountain, Check } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import type { Animal, AnimalStatus } from "@/types/animal";
 import type { Zone } from "@/types/zone";
+import { cn } from "@/lib/utils";
+import { mn } from "@/lib/i18n/mn";
 
 const STATUS_COLOR: Record<AnimalStatus, string> = {
   safe: "#16a34a",
@@ -29,12 +33,30 @@ const ZONE_COLOR: Record<Zone["type"], string> = {
   buffer: "#a1a1aa",
 };
 
-// Google Maps satellite + labels (hybrid, lyrs=y). No API key; fine for local/demo.
-// Use lyrs=s for pure satellite without labels.
-const TILE_URL = "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}";
+// Google tile basemaps (no API key; fine for local/demo). lyrs: y=hybrid
+// satellite, m=roadmap, p=terrain.
+type LayerKey = "satellite" | "roadmap" | "terrain";
+
+const LAYERS: Record<LayerKey, { label: string; lyrs: string; Icon: LucideIcon }> = {
+  satellite: { label: mn.map.satellite, lyrs: "y", Icon: Satellite },
+  roadmap: { label: mn.map.roadmap, lyrs: "m", Icon: MapIcon },
+  terrain: { label: mn.map.terrain, lyrs: "p", Icon: Mountain },
+};
+const LAYER_ORDER: LayerKey[] = ["satellite", "roadmap", "terrain"];
+
+const tileUrl = (key: LayerKey) =>
+  `https://{s}.google.com/vt/lyrs=${LAYERS[key].lyrs}&x={x}&y={y}&z={z}`;
 const TILE_SUBDOMAINS = ["mt0", "mt1", "mt2", "mt3"];
 
 const ATTR = '&copy; <a href="https://www.google.com/maps">Google</a>';
+
+const LAYER_STORAGE_KEY = "malchin.mapLayer";
+
+function readSavedLayer(): LayerKey {
+  if (typeof window === "undefined") return "satellite";
+  const saved = window.localStorage.getItem(LAYER_STORAGE_KEY);
+  return saved && saved in LAYERS ? (saved as LayerKey) : "satellite";
+}
 
 export interface MapViewLeafletProps {
   animals: Animal[];
@@ -170,6 +192,14 @@ export default function MapViewLeaflet({
   focusLng,
 }: MapViewLeafletProps) {
   const mapRef = useRef<LeafletMap | null>(null);
+  const [layer, setLayer] = useState<LayerKey>(readSavedLayer);
+
+  function changeLayer(next: LayerKey) {
+    setLayer(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LAYER_STORAGE_KEY, next);
+    }
+  }
 
   const bounds = useMemo(() => {
     if (routePath && routePath.length > 0) return pointsBounds(routePath);
@@ -184,20 +214,23 @@ export default function MapViewLeaflet({
   }, [animals, selectedAnimalId, routePath]);
 
   return (
-    <MapContainer
-      bounds={bounds}
-      boundsOptions={{ padding: [28, 28] }}
-      className="h-full w-full"
-      zoomControl={false}
-      attributionControl
-      scrollWheelZoom
-      ref={mapRef}
-    >
+    <>
+      <LayerControl active={layer} onChange={changeLayer} />
+      <MapContainer
+        bounds={bounds}
+        boundsOptions={{ padding: [28, 28] }}
+        className="h-full w-full"
+        zoomControl={false}
+        attributionControl
+        scrollWheelZoom
+        ref={mapRef}
+      >
       <BoundsFlyer bounds={bounds} />
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
       <FocusController token={focusToken} lat={focusLat} lng={focusLng} />
       <TileLayer
-        url={TILE_URL}
+        key={layer}
+        url={tileUrl(layer)}
         attribution={ATTR}
         subdomains={TILE_SUBDOMAINS}
         maxZoom={20}
@@ -290,6 +323,67 @@ export default function MapViewLeaflet({
           })()}
         </>
       )}
-    </MapContainer>
+      </MapContainer>
+    </>
+  );
+}
+
+/** Google-style basemap switcher — compact button that expands to layer options. */
+function LayerControl({
+  active,
+  onChange,
+}: {
+  active: LayerKey;
+  onChange: (key: LayerKey) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ActiveIcon = LAYERS[active].Icon;
+
+  return (
+    <div className="absolute right-2 top-2 z-[1000] flex flex-col items-end pt-safe">
+      <button
+        type="button"
+        aria-label={mn.map.layer}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "tap flex size-11 items-center justify-center rounded-full",
+          "border bg-background/95 backdrop-blur shadow-sm",
+          "hover:bg-accent active:scale-95 transition",
+        )}
+      >
+        <ActiveIcon className="size-5" />
+      </button>
+
+      {open && (
+        <ul className="mt-2 w-44 overflow-hidden rounded-xl border bg-background/95 backdrop-blur shadow-md">
+          {LAYER_ORDER.map((key) => {
+            const { label, Icon } = LAYERS[key];
+            const selected = key === active;
+            return (
+              <li key={key}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(key);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "tap flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                    selected
+                      ? "bg-secondary text-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <Icon className={cn("size-4 shrink-0", selected && "text-primary")} />
+                  <span className="flex-1 text-left">{label}</span>
+                  {selected && <Check className="size-4 shrink-0 text-primary" />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
