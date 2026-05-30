@@ -29,8 +29,9 @@ const ZONE_COLOR: Record<Zone["type"], string> = {
   buffer: "#a1a1aa",
 };
 
-// Google Maps roadmap tiles (lyrs=m). No API key; fine for local/demo use.
-const TILE_URL = "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+// Google Maps satellite + labels (hybrid, lyrs=y). No API key; fine for local/demo.
+// Use lyrs=s for pure satellite without labels.
+const TILE_URL = "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}";
 const TILE_SUBDOMAINS = ["mt0", "mt1", "mt2", "mt3"];
 
 const ATTR = '&copy; <a href="https://www.google.com/maps">Google</a>';
