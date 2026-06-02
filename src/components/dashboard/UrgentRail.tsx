@@ -62,7 +62,7 @@ export function UrgentRail({
       )}
     >
       <ul
-        className="pointer-events-auto flex gap-2.5 px-4 pb-3 overflow-x-auto snap-x snap-mandatory"
+        className="pointer-events-auto flex gap-2.5 px-4 pb-3 overflow-x-auto snap-x snap-mandatory md:pl-6"
         style={{ scrollbarWidth: "none" }}
       >
         {urgent.map((a) => (

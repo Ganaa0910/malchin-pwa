@@ -4,7 +4,7 @@
  */
 export const mn = {
   app: {
-    name: "Малчин",
+    name: "Belchee",
     tagline: "GPS",
   },
   theme: {
@@ -22,22 +22,22 @@ export const mn = {
   nav: {
     home: "Байршил",
     herd: "Сүрэг",
-    polygon: "Полигон",
+    polygon: "Виртуал хашаа",
     alerts: "Мэдэгдэл",
     weather: "Цаг агаар",
     profile: "Профайл",
   },
   polygon: {
-    title: "Полигон",
+    title: "Виртуал хашаа",
     subtitle: "Өөрийн бүс зуран малаа хянана",
-    add: "Полигон нэмэх",
+    add: "Хашаа нэмэх",
     drawHint: "Газрын зураг дээр дарж цэгүүдийг нэмнэ үү",
     points: "цэг",
     cancel: "Болих",
     undo: "Буцаах",
     save: "Хадгалах",
     minPoints: "Дор хаяж 3 цэг хэрэгтэй",
-    empty: "Полигон алга. Шинээр нэмнэ үү.",
+    empty: "Хашаа алга. Шинээр нэмнэ үү.",
     delete: "Устгах",
     inside: "Дотор",
     insideCount: "дотор",

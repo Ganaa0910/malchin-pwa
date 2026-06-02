@@ -76,7 +76,7 @@ export function PolygonScreen() {
   }
   async function saveDraw() {
     if (draft.length < 3) return;
-    await addPolygon(draft, `${mn.polygon.title} ${polygons.length + 1}`);
+    await addPolygon(draft, `${mn.nav.polygon} ${polygons.length + 1}`);
     setDrawing(false);
     setDraft([]);
   }

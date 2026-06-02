@@ -60,7 +60,7 @@ export function Dashboard() {
         />
 
         {/* Top floating card — location + status summary */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 pt-safe pl-3 pr-16 z-20 flex justify-center md:justify-start md:px-4">
+        <div className="pointer-events-none absolute inset-x-0 top-0 pt-safe pl-3 pr-16 z-20 flex justify-center md:justify-start md:pl-6 md:pr-4">
           <div
             className={cn(
               "pointer-events-auto mt-3 w-full max-w-sm",

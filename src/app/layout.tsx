@@ -20,13 +20,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Малчин — GPS",
+  title: "Belchee — GPS",
   description: "Малаа GPS-ээр хянана",
-  applicationName: "Малчин",
+  applicationName: "Belchee",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Малчин",
+    title: "Belchee",
   },
 };
 

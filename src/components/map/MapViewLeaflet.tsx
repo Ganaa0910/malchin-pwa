@@ -146,6 +146,19 @@ function pointsBounds(
   ];
 }
 
+/** Keeps Leaflet's canvas in sync with its container size (sidebar toggles, etc.). */
+function SizeWatcher() {
+  const map = useMap();
+  useEffect(() => {
+    map.invalidateSize();
+    const el = map.getContainer();
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [map]);
+  return null;
+}
+
 function BoundsFlyer({ bounds }: { bounds: LatLngBoundsLiteral }) {
   const map = useMap();
   const lastKey = useRef<string>("");
@@ -251,6 +264,7 @@ export default function MapViewLeaflet({
         scrollWheelZoom
         ref={mapRef}
       >
+      <SizeWatcher />
       <BoundsFlyer bounds={bounds} />
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
       <FocusController token={focusToken} lat={focusLat} lng={focusLng} />

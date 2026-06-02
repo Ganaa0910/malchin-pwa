@@ -29,8 +29,8 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 aria-label={label}
                 className={cn(
-                  "tap flex flex-col items-center justify-center gap-1 py-2",
-                  "text-[11px] leading-none transition-colors",
+                  "tap flex flex-col items-center justify-center gap-1 px-0.5 py-2",
+                  "text-center text-[10px] leading-tight transition-colors",
                   active
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground",
