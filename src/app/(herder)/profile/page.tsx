@@ -5,6 +5,7 @@ import {
   LogIn,
   UsersRound,
   ShieldCheck,
+  LifeBuoy,
   ChevronRight,
 } from "lucide-react";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
@@ -79,6 +80,28 @@ export default function ProfilePage() {
             Бусад
           </h2>
           <ul className="rounded-lg border bg-card divide-y overflow-hidden">
+            {/* Help — mobile only; desktop reaches it from the sidebar */}
+            <li className="md:hidden">
+              <Link
+                href="/help"
+                className="tap flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
+              >
+                <LifeBuoy
+                  className="size-4 text-muted-foreground shrink-0"
+                  aria-hidden
+                />
+                <span className="flex-1 min-w-0 text-sm font-medium">
+                  {mn.help.title}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {mn.help.contact.title}
+                </span>
+                <ChevronRight
+                  className="size-4 text-muted-foreground shrink-0"
+                  aria-hidden
+                />
+              </Link>
+            </li>
             {LINKS.map(({ href, label, sub, Icon }) => (
               <li key={href}>
                 <Link
