@@ -141,6 +141,23 @@ body {
   height: 100dvh;
 }
 
+/* Brand logo — single-colour SVG recoloured per theme via CSS mask.
+   Left-aligned so the collapsed icon rail reveals just the mark. */
+.brand-logo {
+  background-color: #0f5132;
+  -webkit-mask: url(/belchee-logo.svg) left center / contain no-repeat;
+  mask: url(/belchee-logo.svg) left center / contain no-repeat;
+}
+.brand-mark {
+  background-color: #0f5132;
+  -webkit-mask: url(/belchee-mark.svg) center / contain no-repeat;
+  mask: url(/belchee-mark.svg) center / contain no-repeat;
+}
+.dark .brand-logo,
+.dark .brand-mark {
+  background-color: #5fd6a0;
+}
+
 /* Leaflet — keep neutral, contain its z-index storm */
 .leaflet-container {
   background: var(--muted);

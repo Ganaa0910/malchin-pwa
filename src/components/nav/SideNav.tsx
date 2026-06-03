@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPinned, LifeBuoy } from "lucide-react";
+import { LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -29,20 +29,21 @@ export function SideNav() {
           "hover:w-60 hover:shadow-xl",
         )}
       >
-        {/* Brand */}
-        <div className="flex h-16 items-center gap-3 border-b px-3.5">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
-            <MapPinned className="size-5 text-primary" />
-          </span>
-          <span className="flex items-baseline gap-1.5 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100">
-            <span className="text-base font-semibold tracking-tight">
-              {mn.app.name}
-            </span>
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              {mn.app.tagline}
-            </span>
-          </span>
-        </div>
+        {/* Brand — mark only when collapsed, full lockup when expanded */}
+        <Link
+          href="/"
+          aria-label={mn.app.name}
+          className="relative flex h-20 items-center justify-center border-b px-3"
+        >
+          <span
+            aria-hidden
+            className="brand-mark size-12 shrink-0 transition-opacity duration-150 group-hover/nav:opacity-0"
+          />
+          <span
+            aria-hidden
+            className="brand-logo absolute left-3 top-1/2 h-14 w-52 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100"
+          />
+        </Link>
 
         {/* Links */}
         <nav aria-label="Цэс" className="flex-1 px-2.5 py-4">
