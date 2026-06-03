@@ -17,7 +17,7 @@ const LINKS = [
   {
     href: "/geofence",
     label: mn.geofence.title,
-    sub: "4 бүс",
+    sub: "8 бүс",
     Icon: PencilRuler,
   },
   {
