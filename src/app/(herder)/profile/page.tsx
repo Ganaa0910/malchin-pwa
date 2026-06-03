@@ -104,7 +104,7 @@ export default function ProfilePage() {
         </section>
 
         <p className="text-xs text-muted-foreground text-center pt-2 font-mono">
-          Малчин v0.0.1
+          Belchee v0.0.1
         </p>
       </div>
     </>

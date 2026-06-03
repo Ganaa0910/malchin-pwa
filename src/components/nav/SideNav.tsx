@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPinned } from "lucide-react";
+import { MapPinned, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -75,6 +75,32 @@ export function SideNav() {
             })}
           </ul>
         </nav>
+
+        {/* Secondary — Help */}
+        <div className="px-2.5 pb-1">
+          <Link
+            href="/help"
+            aria-current={pathname.startsWith("/help") ? "page" : undefined}
+            aria-label={mn.help.title}
+            className={cn(
+              "tap flex items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
+              pathname.startsWith("/help")
+                ? "bg-secondary font-medium text-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
+          >
+            <LifeBuoy
+              className={cn(
+                "size-5 shrink-0",
+                pathname.startsWith("/help") && "text-primary",
+              )}
+              strokeWidth={pathname.startsWith("/help") ? 2.25 : 1.75}
+            />
+            <span className="whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100">
+              {mn.help.title}
+            </span>
+          </Link>
+        </div>
 
         {/* Theme — hidden until expanded (segmented control needs the width) */}
         <div className="border-t p-2.5">
