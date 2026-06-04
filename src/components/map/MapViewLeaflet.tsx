@@ -237,6 +237,45 @@ function FocusController({
   return null;
 }
 
+/** Flies the map to fit the currently selected fence so it's easy to find. */
+function SelectedPolygonFlyer({
+  selectedId,
+  polygons,
+}: {
+  selectedId: string | null;
+  polygons?: { id: string; coordinates: [number, number][] }[];
+}) {
+  const map = useMap();
+  const seen = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedId) {
+      seen.current = null;
+      return;
+    }
+    if (selectedId === seen.current) return;
+    const poly = polygons?.find((p) => p.id === selectedId);
+    if (!poly || poly.coordinates.length === 0) return;
+    seen.current = selectedId;
+
+    let minLat = Infinity,
+      minLng = Infinity,
+      maxLat = -Infinity,
+      maxLng = -Infinity;
+    for (const [lat, lng] of poly.coordinates) {
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+    }
+    const bounds: LatLngBoundsLiteral = [
+      [minLat, minLng],
+      [maxLat, maxLng],
+    ];
+    map.flyToBounds(bounds, { padding: [48, 48], duration: 0.45, maxZoom: 15 });
+  }, [selectedId, polygons, map]);
+  return null;
+}
+
 export default function MapViewLeaflet({
   animals,
   zones,
@@ -297,6 +336,10 @@ export default function MapViewLeaflet({
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
       <ZoomController inToken={zoomInToken} outToken={zoomOutToken} />
       <FocusController token={focusToken} lat={focusLat} lng={focusLng} />
+      <SelectedPolygonFlyer
+        selectedId={selectedPolygonId}
+        polygons={customPolygons}
+      />
       {onMapClick && <MapClickHandler onClick={onMapClick} />}
       <TileLayer
         key={layer}
@@ -310,6 +353,7 @@ export default function MapViewLeaflet({
       {customPolygons?.map((poly) => {
         const color = poly.color ?? "#16a34a";
         const selected = poly.id === selectedPolygonId;
+        const dimmed = selectedPolygonId != null && !selected;
         return (
           <Polygon
             key={poly.id}
@@ -317,9 +361,10 @@ export default function MapViewLeaflet({
             pathOptions={{
               color,
               fillColor: color,
-              fillOpacity: selected ? 0.25 : 0.12,
-              weight: selected ? 3 : 1.75,
-              opacity: selected ? 1 : 0.8,
+              fillOpacity: selected ? 0.35 : dimmed ? 0.05 : 0.12,
+              weight: selected ? 4 : 1.75,
+              opacity: selected ? 1 : dimmed ? 0.4 : 0.8,
+              dashArray: selected ? undefined : dimmed ? "4 4" : undefined,
             }}
             eventHandlers={{ click: () => onPolygonClick?.(poly.id) }}
           />
