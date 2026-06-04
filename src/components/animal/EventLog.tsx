@@ -1,27 +1,20 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Battery,
-  ShieldAlert,
-  Wifi,
-  WifiOff,
-  Activity,
-} from "lucide-react";
+import { format } from "date-fns";
 import { useAlerts } from "@/lib/db/hooks";
 import { mn } from "@/lib/i18n/mn";
-import { timeAgoMn } from "@/lib/time";
+import { cn } from "@/lib/utils";
 import type { Animal } from "@/types/animal";
 import type { AlertType } from "@/types/alert";
 
-const TYPE_ICON: Record<AlertType, typeof AlertTriangle> = {
-  breach: ShieldAlert,
-  "low-battery": Battery,
-  "base-station": WifiOff,
-  predator: AlertTriangle,
-  weather: AlertTriangle,
-  health: Activity,
-  missing: Wifi,
+const TAG: Record<AlertType, { label: string; danger?: boolean }> = {
+  breach: { label: "ДАВСАН", danger: true },
+  "low-battery": { label: "BAT" },
+  "base-station": { label: "СҮЛЖЭЭ" },
+  predator: { label: "АЮУЛ", danger: true },
+  weather: { label: "ЦАГ" },
+  health: { label: "ЭРҮҮЛ" },
+  missing: { label: "АЛГА", danger: true },
 };
 
 export function EventLog({ animal }: { animal: Animal }) {
@@ -34,50 +27,43 @@ export function EventLog({ animal }: { animal: Animal }) {
     )
     .slice(0, 8);
 
-  if (events.length === 0) {
-    return (
-      <section className="space-y-2">
-        <h2 className="text-lg px-1">{mn.animal.events}</h2>
-        <p className="text-sm text-muted-foreground text-center py-6 rounded-md border bg-card">
+  return (
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <h3 className="mb-2 text-sm font-bold">{mn.animal.events}</h3>
+      {events.length === 0 ? (
+        <p className="py-6 text-center font-mono text-sm text-mut">
           Түүх байхгүй
         </p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="space-y-2">
-      <h2 className="text-lg px-1">{mn.animal.events}</h2>
-      <ul className="space-y-2">
-        {events.map((e) => {
-          const Icon = TYPE_ICON[e.type] ?? AlertTriangle;
-          return (
-            <li
-              key={e.id}
-              className="rounded-md border bg-card text-card-foreground p-3 flex gap-3"
-              
-            >
-              <span
-                aria-hidden
-                className="size-8 shrink-0 rounded-full flex items-center justify-center bg-muted text-muted-foreground"
+      ) : (
+        <div>
+          {events.map((e) => {
+            const tag = TAG[e.type] ?? { label: "—" };
+            return (
+              <div
+                key={e.id}
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-dashed border-line py-2.5 last:border-0"
               >
-                <Icon className="size-4" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold leading-tight">
+                <span className="font-mono text-[11px] font-semibold text-info">
+                  {format(new Date(e.createdAt), "HH:mm")}
+                </span>
+                <span className="min-w-0 truncate text-[13px] text-ink">
                   {e.title}
-                </p>
-                <p className="text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">
-                  {e.message}
-                </p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1 font-mono">
-                  {timeAgoMn(e.createdAt)}
-                </p>
+                </span>
+                <span
+                  className={cn(
+                    "rounded-[3px] px-1.5 py-0.5 font-mono text-[9px] font-bold",
+                    tag.danger
+                      ? "bg-danger-soft text-danger"
+                      : "bg-bg-2 text-mut",
+                  )}
+                >
+                  {tag.label}
+                </span>
               </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

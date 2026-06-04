@@ -144,6 +144,11 @@ export const mn = {
     device: "GPS",
     noDevice: "GPS байхгүй",
     lastSeen: "Сүүлд харсан",
+    route: "Маршрут",
+    pastureDist: "Бэлчээрээс зай",
+    gpsSignal: "GPS дохио",
+    lastSync: "Сүүлд синк",
+    notFound: "Мал олдсонгүй",
   },
   alerts: {
     title: "Мэдэгдэл",
