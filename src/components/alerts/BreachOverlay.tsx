@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ShieldAlert, MapPin, Zap, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
+import { format } from "date-fns";
 import { useAppStore } from "@/lib/store/useAppStore";
 import { getDb } from "@/lib/db";
 import { mn } from "@/lib/i18n/mn";
-import { cn } from "@/lib/utils";
 
 export function BreachOverlay() {
+  const router = useRouter();
   const activeBreachId = useAppStore((s) => s.activeBreachId);
   const dismissBreach = useAppStore((s) => s.dismissBreach);
 
@@ -37,7 +37,11 @@ export function BreachOverlay() {
   if (!activeBreachId || !data) return null;
   const { alert, animal } = data;
 
-  async function handleAcknowledge() {
+  const name = animal?.name ?? animal?.id ?? "Тодорхойгүй";
+  const lat = alert.lat ?? animal?.lat;
+  const lng = alert.lng ?? animal?.lng;
+
+  async function ack() {
     if (!alert) return;
     await getDb().alerts.update(alert.id, { acknowledged: true });
     await getDb().syncQueue.add({
@@ -49,95 +53,128 @@ export function BreachOverlay() {
     dismissBreach();
   }
 
+  function viewOnMap() {
+    if (animal) router.push(`/herd/${animal.id}`);
+    dismissBreach();
+  }
+
   return (
     <div
       role="alertdialog"
       aria-labelledby="breach-title"
       aria-describedby="breach-message"
       aria-modal="true"
-      className={cn(
-        "fixed inset-0 z-[60] flex flex-col",
-        "bg-destructive text-destructive-foreground",
-        "animate-in fade-in duration-200",
-      )}
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-ink/85 p-5 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={dismissBreach}
     >
-      <div className="pt-safe pb-safe flex-1 flex flex-col">
-        <header className="px-5 pt-6 pb-4 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="size-12 rounded-full bg-destructive-foreground/15 flex items-center justify-center animate-pulse">
-              <ShieldAlert className="size-6" aria-hidden />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest opacity-80">
-                {mn.alertPriority.critical}
-              </p>
-              <h1
-                id="breach-title"
-                className="text-2xl leading-tight"
-              >
-                {mn.breach.title}
-              </h1>
-            </div>
+      <div
+        className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-line bg-bg shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Red banner */}
+        <div className="flex items-center justify-between gap-3 bg-danger px-5 py-4 text-white">
+          <span className="font-mono text-[11px] font-bold tracking-wider">
+            ⚠ {mn.breach.bannerTitle}
+          </span>
+          <span className="font-mono text-[11px] opacity-85">
+            {format(new Date(alert.createdAt), "HH:mm:ss")}
+          </span>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-danger-soft text-danger">
+            <AlertTriangle className="size-8" aria-hidden />
           </div>
-          <button
-            type="button"
-            onClick={dismissBreach}
-            aria-label={mn.breach.dismiss}
-            className="tap size-11 rounded-full flex items-center justify-center bg-destructive-foreground/15 active:scale-95"
+          <h2
+            id="breach-title"
+            className="text-center text-2xl font-bold leading-tight"
           >
-            <X className="size-5" aria-hidden />
-          </button>
-        </header>
-
-        <div className="flex-1 px-5 flex flex-col justify-center gap-6">
-          <div className="space-y-2">
-            <p className="text-sm uppercase tracking-wider opacity-75">
-              {alert.title}
-            </p>
-            <p
-              id="breach-message"
-              className="text-3xl leading-tight"
-            >
-              {animal?.name ?? animal?.id ?? "Тодорхойгүй"}
-            </p>
-            {animal && (
-              <p className="text-sm opacity-85">
-                {mn.species[animal.species]} ·{" "}
-                <span className="font-mono">{animal.tag}</span>
-              </p>
-            )}
-          </div>
-
-          <p className="text-base leading-relaxed opacity-95">
+            {name} {mn.breach.breached}
+          </h2>
+          <p
+            id="breach-message"
+            className="mt-2 text-center font-mono text-[13px] leading-relaxed text-mut"
+          >
+            {animal && `${animal.id} · ${mn.species[animal.species]}`}
+            <br />
             {alert.message}
           </p>
-        </div>
 
-        <div className="px-5 pb-6 grid grid-cols-1 gap-2.5">
-          {animal && (
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="tap w-full"
-              onClick={dismissBreach}
+          {/* 2x2 info grid */}
+          <div className="mt-[18px] grid grid-cols-2 gap-3.5 rounded-[10px] border border-line bg-surface p-3.5">
+            <Info
+              label={mn.breach.labelDist}
+              value={animal ? `${Math.round(animal.distanceFromBaseM)}м` : "—"}
+            />
+            <Info
+              label={mn.breach.labelSpeed}
+              value={
+                animal
+                  ? `${animal.speedKmh.toFixed(1)} ${mn.weather.windUnit}`
+                  : "—"
+              }
+            />
+            <Info
+              label={mn.breach.labelCoord}
+              value={
+                lat != null && lng != null
+                  ? `${lat.toFixed(2)}°N ${lng.toFixed(2)}°E`
+                  : "—"
+              }
+              small
+            />
+            <Info label={mn.breach.labelSent} value={mn.breach.channels} />
+          </div>
+
+          {/* Actions */}
+          <div className="mt-[18px] flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={viewOnMap}
+              className="rounded-[9px] bg-ink py-3 font-mono text-[13px] font-bold text-bg"
             >
-              <Link href={`/herd/${animal.id}`}>
-                <MapPin className="size-4 mr-1" aria-hidden />
-                {mn.breach.locate}
-              </Link>
-            </Button>
-          )}
-          <Button
-            size="lg"
-            variant="outline"
-            className="tap w-full bg-destructive-foreground text-destructive border-destructive-foreground hover:bg-destructive-foreground/90"
-            onClick={handleAcknowledge}
-          >
-            <Zap className="size-4 mr-1" aria-hidden />
-            {mn.breach.deter}
-          </Button>
+              {mn.breach.viewOnMap}
+            </button>
+            <button
+              type="button"
+              onClick={ack}
+              className="rounded-[9px] border border-line bg-transparent py-3 font-mono text-[13px] font-bold text-ink transition-colors hover:bg-bg-2"
+            >
+              {mn.breach.sendDeter}
+            </button>
+            <button
+              type="button"
+              onClick={dismissBreach}
+              className="rounded-[9px] border border-line bg-transparent py-3 font-mono text-[13px] font-bold text-ink transition-colors hover:bg-bg-2"
+            >
+              {mn.breach.snooze}
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Info({
+  label,
+  value,
+  small,
+}: {
+  label: string;
+  value: string;
+  small?: boolean;
+}) {
+  return (
+    <div>
+      <div className="font-mono text-[10px] uppercase tracking-wide text-mut">
+        {label}
+      </div>
+      <div
+        className={`mt-1 font-mono font-bold text-ink ${small ? "text-xs" : "text-sm"}`}
+      >
+        {value}
       </div>
     </div>
   );
