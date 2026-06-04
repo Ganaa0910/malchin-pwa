@@ -176,7 +176,7 @@ export const mn = {
     recent: "сүүлийн 7 хоног",
     filterAll: "Бүгд",
     groupHigh: "Анхаарах шаардлагатай",
-    groupMedium: "Дунд приоритет",
+    groupMedium: "Дунд",
     groupInfo: "Мэдээлэл",
     viewOnMap: "Зураг дээр",
     minutesAgo: (m: number) => `${m} мин өмнө`,
