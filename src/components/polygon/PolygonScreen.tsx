@@ -1,15 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Plus,
-  Undo2,
-  Check,
-  X,
-  Trash2,
-  ChevronRight,
-  Hexagon,
-} from "lucide-react";
+import { Plus, Undo2, X, Eye, EyeOff, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -17,21 +9,28 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { MapView } from "@/components/map/MapView";
+import { Topbar } from "@/components/nav/Topbar";
 import { useAnimals, useOwner, usePolygons } from "@/lib/db/hooks";
-import { addPolygon, deletePolygon } from "@/lib/db/polygons";
-import { pointInPolygon, distanceToPolygonM } from "@/lib/proximity";
+import { addPolygon, deletePolygon, setPolygonActive } from "@/lib/db/polygons";
+import {
+  pointInPolygon,
+  distanceToPolygonM,
+  polygonAreaKm2,
+} from "@/lib/proximity";
 import { mn } from "@/lib/i18n/mn";
 import { cn } from "@/lib/utils";
 import type { AnimalStatus } from "@/types/animal";
+import type { CustomPolygon } from "@/types/polygon";
 
 const STATUS_DOT: Record<AnimalStatus, string> = {
   safe: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-destructive",
-  offline: "bg-muted-foreground",
+  warning: "bg-amber",
+  danger: "bg-danger",
+  offline: "bg-mut-2",
 };
+
+const isActive = (p: CustomPolygon) => p.active !== false;
 
 function fmtDist(m: number): string {
   return m < 1000 ? `${Math.round(m)} м` : `${(m / 1000).toFixed(1)} км`;
@@ -50,6 +49,12 @@ export function PolygonScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const selected = polygons.find((p) => p.id === selectedId) ?? null;
+  const activeCount = polygons.filter(isActive).length;
+  const inactiveCount = polygons.length - activeCount;
+  const totalArea = useMemo(
+    () => polygons.reduce((s, p) => s + polygonAreaKm2(p.coordinates), 0),
+    [polygons],
+  );
 
   const distances = useMemo(() => {
     if (!selected) return [];
@@ -86,146 +91,168 @@ export function PolygonScreen() {
   }
 
   return (
-    <div className="pb-nav">
-      <div className="relative h-[52vh] max-h-[460px] overflow-hidden border-y md:mt-3 md:rounded-lg md:border">
-        <MapView
-          height="100%"
-          animals={animals}
-          zones={[]}
-          baseLat={baseLat}
-          baseLng={baseLng}
-          customPolygons={polygons.map((p) => ({
-            id: p.id,
-            coordinates: p.coordinates,
-            color: p.color,
-          }))}
-          selectedPolygonId={selectedId}
-          onPolygonClick={drawing ? undefined : (id) => setSelectedId(id)}
-          draftPolygon={drawing ? draft : undefined}
-          onMapClick={
-            drawing
-              ? (lat, lng) => setDraft((d) => [...d, [lat, lng]])
-              : undefined
-          }
-        />
+    <div className="flex h-dvh flex-col">
+      <Topbar
+        title={mn.polygon.title}
+        sub={
+          drawing ? mn.polygon.drawActive : `${polygons.length} ${mn.polygon.countLabel}`
+        }
+      />
 
-        {drawing ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1100] p-3">
-            <div className="pointer-events-auto rounded-xl border bg-background/95 backdrop-blur shadow-md p-3 space-y-2.5">
-              <p className="text-xs text-muted-foreground">
-                {mn.polygon.drawHint}
-                <span className="ml-1 tabular-nums text-foreground">
-                  ({draft.length} {mn.polygon.points})
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {/* ===== MAP ===== */}
+        <div className="relative h-[42vh] shrink-0 md:h-auto md:flex-1">
+          <MapView
+            height="100%"
+            animals={animals}
+            zones={[]}
+            baseLat={baseLat}
+            baseLng={baseLng}
+            customPolygons={polygons.filter(isActive).map((p) => ({
+              id: p.id,
+              coordinates: p.coordinates,
+              color: p.color,
+            }))}
+            selectedPolygonId={selectedId}
+            onPolygonClick={drawing ? undefined : (id) => setSelectedId(id)}
+            draftPolygon={drawing ? draft : undefined}
+            onMapClick={
+              drawing ? (lat, lng) => setDraft((d) => [...d, [lat, lng]]) : undefined
+            }
+          />
+
+          {drawing && (
+            <>
+              {/* Draw toolbar */}
+              <div className="absolute left-3 top-3 z-[1100] flex gap-1 rounded-[10px] border border-line bg-bg/95 p-1.5 shadow-lg backdrop-blur">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-brand px-2.5 py-1.5 font-mono text-[11px] font-semibold text-white">
+                  <Plus className="size-3.5" /> {mn.polygon.addPoint}
                 </span>
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={cancelDraw}>
-                  <X className="size-4" /> {mn.polygon.cancel}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => setDraft((d) => d.slice(0, -1))}
                   disabled={draft.length === 0}
+                  className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[11px] font-semibold text-ink-2 transition-colors hover:bg-surface disabled:opacity-40"
                 >
-                  <Undo2 className="size-4" /> {mn.polygon.undo}
-                </Button>
-                <Button
-                  size="sm"
-                  className="ml-auto"
+                  <Undo2 className="size-3.5" /> {mn.polygon.removePoint}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelDraw}
+                  className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[11px] font-semibold text-ink-2 transition-colors hover:bg-surface"
+                >
+                  <X className="size-3.5" /> {mn.polygon.cancel}
+                </button>
+              </div>
+
+              {/* Live hint */}
+              <div className="absolute left-1/2 top-[68px] z-[1100] flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-[7px] bg-ink/90 px-3.5 py-2 font-mono text-[11px] text-bg backdrop-blur md:top-3">
+                <span className="size-1.5 animate-pulse rounded-full bg-brand-2" />
+                {mn.polygon.drawHint} · {draft.length} {mn.polygon.pointsPlaced}
+              </div>
+
+              {/* Action buttons */}
+              <div className="absolute bottom-4 left-1/2 z-[1100] flex -translate-x-1/2 gap-2">
+                <button
+                  type="button"
+                  onClick={cancelDraw}
+                  className="rounded-lg border border-line bg-surface px-4 py-2.5 font-mono text-xs font-bold text-ink shadow-md"
+                >
+                  {mn.polygon.cancel}
+                </button>
+                <button
+                  type="button"
                   onClick={saveDraw}
                   disabled={draft.length < 3}
+                  className="rounded-lg bg-brand px-4 py-2.5 font-mono text-xs font-bold text-white shadow-md disabled:opacity-40"
                 >
-                  <Check className="size-4" /> {mn.polygon.save}
-                </Button>
+                  {mn.polygon.saveFence}
+                </button>
               </div>
-              {draft.length > 0 && draft.length < 3 && (
-                <p className="text-[11px] text-muted-foreground">
-                  {mn.polygon.minPoints}
-                </p>
-              )}
+            </>
+          )}
+        </div>
+
+        {/* ===== FENCE SIDEBAR ===== */}
+        <aside className="flex min-h-0 flex-1 flex-col border-t border-line bg-bg-2 md:w-80 md:flex-none md:border-l md:border-t-0">
+          <div className="border-b border-line px-4 py-3.5">
+            <h3 className="text-[15px] font-bold">{mn.polygon.listTitle}</h3>
+            <div className="font-mono text-[11px] text-mut">
+              {mn.polygon.activeLabel} {activeCount} · {mn.polygon.inactiveLabel}{" "}
+              {inactiveCount}
             </div>
           </div>
-        ) : (
+
           <button
             type="button"
             onClick={startDraw}
-            className={cn(
-              "tap absolute bottom-3 left-3 z-[1100] inline-flex items-center gap-2",
-              "rounded-full border bg-background/95 backdrop-blur px-4 shadow-sm",
-              "text-sm font-medium hover:bg-accent active:scale-95 transition",
-            )}
+            className="mx-4 mt-3.5 flex items-center justify-center gap-1.5 rounded-lg bg-ink py-2.5 font-mono text-xs font-bold text-bg transition-opacity hover:opacity-90"
           >
-            <Plus className="size-4" /> {mn.polygon.add}
+            <Plus className="size-4" /> {mn.polygon.addNew}
           </button>
-        )}
-      </div>
 
-      {/* Polygon list */}
-      <div className="px-4 py-3 space-y-2">
-        {polygons.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
-            <Hexagon className="size-8 opacity-40" />
-            <p className="text-sm">{mn.polygon.empty}</p>
+          <div className="flex justify-between px-4 py-2.5 font-mono text-[11px] text-mut">
+            <span>
+              {mn.polygon.totalArea}:{" "}
+              <b className="text-ink">{totalArea.toFixed(1)} км²</b>
+            </span>
+            <span>
+              <b className="text-ink">{polygons.length}</b> {mn.polygon.countLabel}
+            </span>
           </div>
-        ) : (
-          polygons.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2.5"
-            >
-              <button
-                type="button"
-                onClick={() => setSelectedId(p.id)}
-                className="tap flex flex-1 items-center gap-3 text-left"
-              >
-                <span
-                  aria-hidden
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ background: p.color }}
+
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3.5 pb-[calc(env(safe-area-inset-bottom)+84px)] pt-1 md:pb-4">
+            {polygons.length === 0 ? (
+              <p className="py-10 text-center font-mono text-sm text-mut">
+                {mn.polygon.empty}
+              </p>
+            ) : (
+              polygons.map((p) => (
+                <FenceItem
+                  key={p.id}
+                  polygon={p}
+                  animalsInside={
+                    animals.filter((a) =>
+                      pointInPolygon(a.lat, a.lng, p.coordinates),
+                    ).length
+                  }
+                  onSelect={() => setSelectedId(p.id)}
+                  onToggle={() => setPolygonActive(p.id, !isActive(p))}
                 />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {p.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {p.coordinates.length} {mn.polygon.points}
-                  </span>
-                </span>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-              </button>
-              <button
-                type="button"
-                aria-label={mn.polygon.delete}
-                onClick={() => handleDelete(p.id)}
-                className="tap shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-          ))
-        )}
+              ))
+            )}
+          </div>
+        </aside>
       </div>
 
       {/* Distances sheet */}
-      <Sheet
-        open={selected !== null}
-        onOpenChange={(o) => !o && setSelectedId(null)}
-      >
+      <Sheet open={selected !== null} onOpenChange={(o) => !o && setSelectedId(null)}>
         <SheetContent side="bottom" className="max-h-[80vh]">
           <SheetHeader>
-            <SheetTitle>{selected?.name}</SheetTitle>
-            <SheetDescription>
+            <SheetTitle className="flex items-center justify-between gap-2">
+              {selected?.name}
+              {selected && (
+                <button
+                  type="button"
+                  aria-label={mn.polygon.delete}
+                  onClick={() => handleDelete(selected.id)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 font-mono text-[11px] font-semibold text-mut transition-colors hover:border-danger hover:text-danger"
+                >
+                  <Trash2 className="size-3.5" /> {mn.polygon.delete}
+                </button>
+              )}
+            </SheetTitle>
+            <SheetDescription className="font-mono">
               {insideCount} / {animals.length} {mn.polygon.insideCount}
               {nearestOutside &&
                 ` · ${mn.polygon.nearest}: ${fmtDist(nearestOutside.dist)}`}
             </SheetDescription>
           </SheetHeader>
-          <ul className="overflow-y-auto px-4 pb-6 space-y-1.5">
+          <ul className="space-y-1.5 overflow-y-auto px-4 pb-6">
             {distances.map(({ animal, inside, dist }) => (
               <li
                 key={animal.id}
-                className="flex items-center gap-3 rounded-md border bg-card px-3 py-2"
+                className="flex items-center gap-3 rounded-md border border-line bg-surface px-3 py-2"
               >
                 <span
                   aria-hidden
@@ -239,8 +266,8 @@ export function PolygonScreen() {
                 </span>
                 <span
                   className={cn(
-                    "shrink-0 text-sm tabular-nums",
-                    inside ? "font-medium text-success" : "text-muted-foreground",
+                    "shrink-0 font-mono text-sm tabular-nums",
+                    inside ? "font-bold text-success" : "text-mut",
                   )}
                 >
                   {inside ? mn.polygon.inside : fmtDist(dist)}
@@ -250,6 +277,80 @@ export function PolygonScreen() {
           </ul>
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function FenceItem({
+  polygon,
+  animalsInside,
+  onSelect,
+  onToggle,
+}: {
+  polygon: CustomPolygon;
+  animalsInside: number;
+  onSelect: () => void;
+  onToggle: () => void;
+}) {
+  const active = isActive(polygon);
+  const area = polygonAreaKm2(polygon.coordinates);
+  return (
+    <div
+      className={cn(
+        "rounded-[9px] border border-line bg-surface p-3 transition-opacity",
+        !active && "opacity-55",
+      )}
+    >
+      <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onSelect}
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+        >
+          <span
+            aria-hidden
+            className={cn(
+              "size-7 shrink-0 rounded-[7px] border-[1.5px]",
+              !active && "grayscale",
+            )}
+            style={{
+              backgroundColor: `${polygon.color}22`,
+              borderColor: polygon.color,
+            }}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-bold">
+              {polygon.name}
+            </span>
+            <span className="font-mono text-[10px] text-mut">
+              POLYGON · {polygon.coordinates.length} {mn.polygon.points}
+            </span>
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
+          title={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
+          className={cn(
+            "flex size-[30px] shrink-0 items-center justify-center rounded-[7px] border transition-colors [&_svg]:size-4",
+            active
+              ? "border-line bg-bg-2 text-ink-2"
+              : "border-transparent text-mut-2",
+          )}
+        >
+          {active ? <Eye /> : <EyeOff />}
+        </button>
+      </div>
+      <div className="mt-2.5 flex gap-3.5 font-mono text-[10px] text-mut">
+        <span>
+          {mn.polygon.area}: <b className="text-ink">{area.toFixed(1)}км²</b>
+        </span>
+        <span>
+          {mn.polygon.animalsLabel}:{" "}
+          <b className="text-ink">{animalsInside || "—"}</b>
+        </span>
+      </div>
     </div>
   );
 }

@@ -8,7 +8,9 @@ export const CustomPolygonSchema = z.object({
   id: z.string(),
   name: z.string(),
   coordinates: z.array(z.tuple([z.number(), z.number()])),
-  color: z.string().default("#16a34a"),
+  color: z.string().default("#0F6E56"),
+  /** Whether the fence is enabled (drawn on the map). Missing = active. */
+  active: z.boolean().default(true),
   createdAt: z.string(),
 });
 

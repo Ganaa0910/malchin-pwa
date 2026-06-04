@@ -160,3 +160,22 @@ export function proximityRank(p: Proximity): number {
       return 2;
   }
 }
+
+/** Approximate polygon area in km² (equirectangular projection + shoelace). */
+export function polygonAreaKm2(coords: [number, number][]): number {
+  if (coords.length < 3) return 0;
+  const latMean =
+    (coords.reduce((s, [la]) => s + la, 0) / coords.length) * (Math.PI / 180);
+  const cos = Math.cos(latMean);
+  let area = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const [la1, lo1] = coords[i];
+    const [la2, lo2] = coords[(i + 1) % coords.length];
+    const x1 = (lo1 * Math.PI) / 180 * R_EARTH * cos;
+    const y1 = (la1 * Math.PI) / 180 * R_EARTH;
+    const x2 = (lo2 * Math.PI) / 180 * R_EARTH * cos;
+    const y2 = (la2 * Math.PI) / 180 * R_EARTH;
+    area += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(area) / 2 / 1e6;
+}
