@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Smoke test screenshots (dev only)
 .smoke/
+
+# Local design migration reference (not part of the app)
+design-reference.html

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { RegisterPWA } from "@/components/pwa/RegisterPWA";
@@ -7,15 +7,15 @@ import { OfflineBadge } from "@/components/pwa/OfflineBadge";
 import { BreachOverlay } from "@/components/alerts/BreachOverlay";
 import "./globals.css";
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-inter",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-jetbrains",
   display: "swap",
 });
 
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#16a34a" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#0F6E56" },
+    { media: "(prefers-color-scheme: dark)", color: "#17130e" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -50,8 +50,8 @@ export default function RootLayout({
       lang="mn"
       suppressHydrationWarning
       className={cn(
-        geistSans.variable,
-        geistMono.variable,
+        inter.variable,
+        jetbrainsMono.variable,
         "h-full antialiased",
       )}
     >

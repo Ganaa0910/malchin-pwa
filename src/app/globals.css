@@ -4,60 +4,86 @@
 /* Class-based dark mode (toggled by next-themes adding `.dark` on <html>). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* shadcn neutral + green primary, with a faint sage tint for warmth */
+/* ===== Warm Paper design system =====
+   Raw palette tokens (--bg, --ink, --brand, …) are the source of truth.
+   The shadcn vars below reference them, so every existing component adopts
+   the new look. Dark mode only redefines the raw tokens; the references
+   resolve per-theme automatically. */
 :root {
-  /* Soft off-white page so white cards lift off it (surface hierarchy) */
-  --background: oklch(0.971 0.006 152);
-  --foreground: oklch(0.19 0.008 152);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.008 152);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.008 152);
-  --primary: oklch(0.611 0.18 145.4);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.945 0.009 152);
-  --secondary-foreground: oklch(0.24 0.01 152);
-  --muted: oklch(0.95 0.008 152);
-  --muted-foreground: oklch(0.5 0.012 152);
-  --accent: oklch(0.93 0.018 150);
-  --accent-foreground: oklch(0.24 0.02 150);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.76 0.16 70);
-  --warning-foreground: oklch(0.145 0 0);
-  --success: oklch(0.611 0.18 145.4);
-  --success-foreground: oklch(0.985 0 0);
-  --border: oklch(0.9 0.008 152);
-  --input: oklch(0.9 0.008 152);
-  --ring: oklch(0.611 0.18 145.4);
-  --radius: 0.5rem;
+  /* Raw palette — light */
+  --bg: #f3f0eb; /* warm beige page */
+  --bg-2: #ede8df; /* sidebar / inset surfaces */
+  --surface: #ffffff; /* cards */
+  --line: #e0d9cd; /* borders */
+  --line-2: #d4cbb9; /* hover borders */
+  --ink: #2b2620; /* primary text */
+  --ink-2: #5e5448; /* secondary text */
+  --mut: #7a7060; /* muted text */
+  --mut-2: #9a8e7a; /* extra muted */
+  --brand: #0f6e56; /* primary green */
+  --brand-2: #1d9e75; /* lighter green */
+  --brand-soft: #dde8e3; /* green tint bg */
+  --r: #c24c3a; /* danger / breach */
+  --r-soft: #f3dcd5;
+  --a: #c68a2e; /* warning / amber */
+  --a-soft: #f3e6cd;
+  --g: #4e8a6a; /* success / safe */
+  --g-soft: #dde8e0;
+  --b: #3e6fa0; /* info / blue */
+  --b-soft: #d8e2ef;
+
+  /* shadcn aliases → raw tokens */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--bg-2);
+  --muted-foreground: var(--mut);
+  --accent: var(--bg-2);
+  --accent-foreground: var(--ink);
+  --destructive: var(--r);
+  --destructive-foreground: #ffffff;
+  --warning: var(--a);
+  --warning-foreground: #ffffff;
+  --success: var(--g);
+  --success-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
+  --radius: 0.625rem;
 }
 
-/* Dark theme — shadcn neutral, keeping the green brand primary. */
+/* Warm-dark equivalents — derived (reference has no dark values).
+   Keeps the paper feel: warm charcoal surfaces, beige ink, brighter accents. */
 .dark {
-  --background: oklch(0.16 0.006 152);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.214 0.007 152);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.214 0.007 152);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.646 0.182 145.4);
-  --primary-foreground: oklch(0.145 0.02 145.4);
-  --secondary: oklch(0.275 0.008 152);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.275 0.008 152);
-  --muted-foreground: oklch(0.708 0.006 152);
-  --accent: oklch(0.3 0.014 150);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.79 0.16 70);
-  --warning-foreground: oklch(0.145 0 0);
-  --success: oklch(0.646 0.182 145.4);
-  --success-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.646 0.182 145.4);
+  --bg: #17130e;
+  --bg-2: #1e1813;
+  --surface: #241d16;
+  --line: #3a322a;
+  --line-2: #4a4036;
+  --ink: #f1ece2;
+  --ink-2: #cabfae;
+  --mut: #9d917d;
+  --mut-2: #7d7263;
+  --brand: #1fa679;
+  --brand-2: #2bc08c;
+  --brand-soft: #16312a;
+  --r: #d9684f;
+  --r-soft: #3a201c;
+  --a: #d29b3f;
+  --a-soft: #3a2f1a;
+  --g: #5fa07d;
+  --g-soft: #1e2f26;
+  --b: #5a87bb;
+  --b-soft: #1c2733;
+
+  --primary-foreground: #0c0a07;
 }
 
 @theme inline {
@@ -85,15 +111,36 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Warm Paper semantic tokens → utilities (bg-surface, text-ink, …) */
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-mut: var(--mut);
+  --color-mut-2: var(--mut-2);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-soft: var(--brand-soft);
+  --color-danger: var(--r);
+  --color-danger-soft: var(--r-soft);
+  --color-amber: var(--a);
+  --color-amber-soft: var(--a-soft);
+  --color-success-soft: var(--g-soft);
+  --color-info: var(--b);
+  --color-info-soft: var(--b-soft);
+
   --radius-xs: calc(var(--radius) - 4px);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 * {
@@ -144,18 +191,14 @@ body {
 /* Brand logo — single-colour SVG recoloured per theme via CSS mask.
    Left-aligned so the collapsed icon rail reveals just the mark. */
 .brand-logo {
-  background-color: #0f5132;
+  background-color: var(--brand);
   -webkit-mask: url(/belchee-logo.svg) left center / contain no-repeat;
   mask: url(/belchee-logo.svg) left center / contain no-repeat;
 }
 .brand-mark {
-  background-color: #0f5132;
+  background-color: var(--brand);
   -webkit-mask: url(/belchee-mark.svg) center / contain no-repeat;
   mask: url(/belchee-mark.svg) center / contain no-repeat;
-}
-.dark .brand-logo,
-.dark .brand-mark {
-  background-color: #5fd6a0;
 }
 
 /* Leaflet — keep neutral, contain its z-index storm */
