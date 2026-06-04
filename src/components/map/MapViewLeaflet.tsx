@@ -70,6 +70,9 @@ export interface MapViewLeafletProps {
   routeCurrentIdx?: number;
   /** Increment to recenter on base camp. */
   recenterToken?: number;
+  /** Increment to zoom in / out by one step. */
+  zoomInToken?: number;
+  zoomOutToken?: number;
   /** When this token changes, pan to focusLat/focusLng. */
   focusToken?: number;
   focusLat?: number;
@@ -190,6 +193,29 @@ function RecenterController({
   return null;
 }
 
+function ZoomController({
+  inToken,
+  outToken,
+}: {
+  inToken: number;
+  outToken: number;
+}) {
+  const map = useMap();
+  const seenIn = useRef(inToken);
+  const seenOut = useRef(outToken);
+  useEffect(() => {
+    if (inToken === seenIn.current) return;
+    seenIn.current = inToken;
+    map.zoomIn();
+  }, [inToken, map]);
+  useEffect(() => {
+    if (outToken === seenOut.current) return;
+    seenOut.current = outToken;
+    map.zoomOut();
+  }, [outToken, map]);
+  return null;
+}
+
 function FocusController({
   token,
   lat,
@@ -221,6 +247,8 @@ export default function MapViewLeaflet({
   routePath,
   routeCurrentIdx,
   recenterToken = 0,
+  zoomInToken = 0,
+  zoomOutToken = 0,
   focusToken = 0,
   focusLat,
   focusLng,
@@ -267,6 +295,7 @@ export default function MapViewLeaflet({
       <SizeWatcher />
       <BoundsFlyer bounds={bounds} />
       <RecenterController token={recenterToken} lat={baseLat} lng={baseLng} />
+      <ZoomController inToken={zoomInToken} outToken={zoomOutToken} />
       <FocusController token={focusToken} lat={focusLat} lng={focusLng} />
       {onMapClick && <MapClickHandler onClick={onMapClick} />}
       <TileLayer

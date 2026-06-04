@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { ChevronRight } from "lucide-react";
 import type { Animal, AnimalStatus } from "@/types/animal";
 import { mn } from "@/lib/i18n/mn";
-import { timeAgoMnShort } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 const SEVERITY: Record<AnimalStatus, number> = {
@@ -16,9 +14,16 @@ const SEVERITY: Record<AnimalStatus, number> = {
 
 const STATUS_DOT: Record<AnimalStatus, string> = {
   safe: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-destructive",
-  offline: "bg-muted-foreground",
+  warning: "bg-amber",
+  danger: "bg-danger",
+  offline: "bg-mut-2",
+};
+
+const STATUS_BORDER: Record<AnimalStatus, string> = {
+  safe: "border-l-success",
+  warning: "border-l-amber",
+  danger: "border-l-danger",
+  offline: "border-l-mut-2",
 };
 
 const STATUS_LABEL: Record<AnimalStatus, string> = {
@@ -55,26 +60,21 @@ export function UrgentRail({
   return (
     <div
       aria-label="Анхаар хэрэгтэй мал"
-      className={cn(
-        "pointer-events-none absolute inset-x-0 z-20",
-        // Mobile clears the bottom nav; desktop has none, so sit near the bottom.
-        "bottom-[calc(env(safe-area-inset-bottom)+84px)] md:bottom-4",
-      )}
+      className="absolute inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+86px)] z-20 md:bottom-3"
     >
-      <ul
-        className="pointer-events-auto flex gap-2.5 px-4 pb-3 overflow-x-auto snap-x snap-mandatory md:pl-6"
+      <div
+        className="flex gap-2.5 overflow-x-auto rounded-xl border border-line bg-bg/95 p-2.5 shadow-lg backdrop-blur"
         style={{ scrollbarWidth: "none" }}
       >
         {urgent.map((a) => (
-          <li key={a.id} className="snap-start shrink-0">
-            <UrgentCard
-              animal={a}
-              active={selectedId === a.id}
-              onClick={() => onSelect(a.id)}
-            />
-          </li>
+          <UrgentCard
+            key={a.id}
+            animal={a}
+            active={selectedId === a.id}
+            onClick={() => onSelect(a.id)}
+          />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -94,39 +94,31 @@ function UrgentCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-[244px] text-left rounded-xl border bg-background/95 backdrop-blur",
-        "shadow-sm px-3.5 py-3 transition-all",
-        "active:scale-[0.98] hover:bg-background",
-        active && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+        "grid w-[240px] shrink-0 grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-[10px] border border-l-[3px] border-line bg-surface px-3 py-2.5 text-left transition-all hover:border-line-2 active:scale-[0.98]",
+        STATUS_BORDER[animal.status],
+        active && "ring-2 ring-ink ring-offset-1 ring-offset-bg",
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span
-            aria-hidden
-            className={cn("size-2 rounded-full shrink-0", STATUS_DOT[animal.status])}
-          />
-          <span className="text-sm font-semibold truncate">{label}</span>
+      <span
+        aria-hidden
+        className={cn("size-2.5 rounded-full", STATUS_DOT[animal.status])}
+      />
+      <div className="min-w-0">
+        <div className="flex items-baseline gap-1.5">
+          <span className="truncate text-[13px] font-bold">{label}</span>
           {animal.name && (
-            <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+            <span className="shrink-0 font-mono text-[10px] text-mut">
               {animal.id}
             </span>
           )}
         </div>
-        <ChevronRight
-          className="size-3.5 text-muted-foreground shrink-0"
-          aria-hidden
-        />
+        <div className="mt-0.5 truncate font-mono text-[10px] text-mut">
+          {STATUS_LABEL[animal.status]} · {mn.species[animal.species]}
+        </div>
       </div>
-
-      <p className="text-xs mt-1.5 text-muted-foreground truncate">
-        {STATUS_LABEL[animal.status]} · {mn.species[animal.species]}
-      </p>
-
-      <div className="flex items-center gap-3 mt-2 text-[11px] tabular-nums text-muted-foreground">
-        <span>{(animal.distanceFromBaseM / 1000).toFixed(1)} км</span>
-        <span aria-hidden>·</span>
-        <span>{timeAgoMnShort(animal.lastSeenAt)}</span>
+      <div className="text-right font-mono text-[13px] font-bold leading-none tabular-nums">
+        {(animal.distanceFromBaseM / 1000).toFixed(1)}
+        <span className="ml-0.5 text-[9px] font-medium text-mut">км</span>
       </div>
     </button>
   );
