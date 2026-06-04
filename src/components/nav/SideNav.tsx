@@ -2,114 +2,173 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LifeBuoy } from "lucide-react";
+import {
+  MapPinned,
+  Layers,
+  Hexagon,
+  Bell,
+  CloudSun,
+  UserRound,
+  LifeBuoy,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { NAV_TABS } from "./tabs";
+import { useAnimals, useAlerts, usePolygons, useOwner } from "@/lib/db/hooks";
+
+type NavItem = {
+  href: string;
+  label: string;
+  Icon: LucideIcon;
+  match: (p: string) => boolean;
+  count?: number;
+};
 
 /**
- * Desktop primary nav — a collapsed icon rail that expands to reveal text
- * labels on hover. Hidden below md, where BottomNav takes over. A fixed-width
- * spacer reserves the collapsed width so page content doesn't reflow when the
- * rail expands over it.
+ * Desktop primary nav — static grouped sidebar (Warm Paper).
+ * Hidden below md, where BottomNav takes over.
  */
 export function SideNav() {
   const pathname = usePathname() ?? "/";
+  const animals = useAnimals();
+  const alerts = useAlerts();
+  const polygons = usePolygons();
+  const owner = useOwner();
+
+  const main: NavItem[] = [
+    { href: "/", label: mn.nav.home, Icon: MapPinned, match: (p) => p === "/" },
+    {
+      href: "/herd",
+      label: mn.nav.herd,
+      Icon: Layers,
+      match: (p) => p.startsWith("/herd"),
+      count: animals.length,
+    },
+    {
+      href: "/polygon",
+      label: mn.nav.polygon,
+      Icon: Hexagon,
+      match: (p) => p.startsWith("/polygon"),
+      count: polygons.length,
+    },
+    {
+      href: "/alerts",
+      label: mn.nav.alerts,
+      Icon: Bell,
+      match: (p) => p.startsWith("/alerts"),
+      count: alerts.length,
+    },
+    {
+      href: "/weather",
+      label: mn.nav.weather,
+      Icon: CloudSun,
+      match: (p) => p.startsWith("/weather"),
+    },
+  ];
+
+  const settings: NavItem[] = [
+    {
+      href: "/profile",
+      label: mn.nav.profile,
+      Icon: UserRound,
+      match: (p) => p.startsWith("/profile"),
+    },
+    {
+      href: "/help",
+      label: mn.help.title,
+      Icon: LifeBuoy,
+      match: (p) => p.startsWith("/help"),
+    },
+  ];
+
+  const name = owner?.name ?? "Малчин";
+  const firstName = name.trim().split(" ")[0];
+  const initial = name.trim().charAt(0);
+  const role = `${mn.profile.owner} · ${owner?.bagh ?? ""}`.trim().toUpperCase();
 
   return (
-    <>
-      {/* Spacer — reserves the collapsed width so content never shifts */}
-      <div aria-hidden className="hidden w-16 shrink-0 md:block" />
-
-      <aside
-        className={cn(
-          "group/nav fixed inset-y-0 left-0 z-40 hidden flex-col border-r bg-background md:flex",
-          "w-16 overflow-hidden transition-[width] duration-200 ease-in-out",
-          "hover:w-60 hover:shadow-xl",
-        )}
+    <aside className="sticky top-0 hidden h-dvh w-[230px] shrink-0 flex-col border-r border-line bg-bg-2 px-3.5 py-4 md:flex">
+      {/* Logo */}
+      <Link
+        href="/"
+        aria-label={mn.app.name}
+        className="flex items-center border-b border-line px-2 pb-4"
       >
-        {/* Brand — mark only when collapsed, full lockup when expanded */}
-        <Link
-          href="/"
-          aria-label={mn.app.name}
-          className="relative flex h-20 items-center justify-center border-b px-3"
-        >
-          <span
-            aria-hidden
-            className="brand-mark size-12 shrink-0 transition-opacity duration-150 group-hover/nav:opacity-0"
-          />
-          <span
-            aria-hidden
-            className="brand-logo absolute left-3 top-1/2 h-14 w-52 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100"
-          />
-        </Link>
+        <span aria-hidden className="brand-logo h-8 w-40 shrink-0" />
+      </Link>
 
-        {/* Links */}
-        <nav aria-label="Цэс" className="flex-1 px-2.5 py-4">
-          <ul className="space-y-1">
-            {NAV_TABS.map(({ href, label, Icon, match }) => {
-              const active = match(pathname);
-              return (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    aria-label={label}
-                    className={cn(
-                      "tap flex items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
-                      active
-                        ? "bg-secondary font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                    )}
-                  >
-                    <Icon
-                      className={cn("size-5 shrink-0", active && "text-primary")}
-                      strokeWidth={active ? 2.25 : 1.75}
-                    />
-                    <span className="whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100">
-                      {label}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+      {/* Grouped nav */}
+      <nav aria-label="Цэс" className="mt-3 flex-1 overflow-y-auto">
+        <NavGroup title={mn.nav.groupMain} items={main} pathname={pathname} />
+        <NavGroup
+          title={mn.nav.groupSettings}
+          items={settings}
+          pathname={pathname}
+        />
+      </nav>
 
-        {/* Secondary — Help */}
-        <div className="px-2.5 pb-1">
-          <Link
-            href="/help"
-            aria-current={pathname.startsWith("/help") ? "page" : undefined}
-            aria-label={mn.help.title}
-            className={cn(
-              "tap flex items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
-              pathname.startsWith("/help")
-                ? "bg-secondary font-medium text-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <LifeBuoy
-              className={cn(
-                "size-5 shrink-0",
-                pathname.startsWith("/help") && "text-primary",
-              )}
-              strokeWidth={pathname.startsWith("/help") ? 2.25 : 1.75}
-            />
-            <span className="whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100">
-              {mn.help.title}
-            </span>
-          </Link>
-        </div>
-
-        {/* Theme — hidden until expanded (segmented control needs the width) */}
-        <div className="border-t p-2.5">
-          <div className="opacity-0 transition-opacity duration-150 group-hover/nav:opacity-100">
-            <ThemeToggle className="w-full" />
+      {/* User footer */}
+      <div className="mt-auto border-t border-line pt-3">
+        <div className="flex items-center gap-2.5 px-2 py-1">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-[13px] font-bold text-white">
+            {initial}
+          </span>
+          <div className="min-w-0">
+            <div className="truncate text-[13px] font-semibold">{firstName}</div>
+            <div className="truncate font-mono text-[10px] text-mut">{role}</div>
           </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </aside>
+  );
+}
+
+function NavGroup({
+  title,
+  items,
+  pathname,
+}: {
+  title: string;
+  items: NavItem[];
+  pathname: string;
+}) {
+  return (
+    <div className="mb-1">
+      <div className="px-2.5 pb-1.5 pt-3 font-mono text-[9px] font-semibold uppercase tracking-wider text-mut-2">
+        {title}
+      </div>
+      <ul className="space-y-0.5">
+        {items.map(({ href, label, Icon, match, count }) => {
+          const active = match(pathname);
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
+                  active
+                    ? "bg-ink font-semibold text-bg"
+                    : "text-ink-2 hover:bg-surface",
+                )}
+              >
+                <Icon className="size-[18px] shrink-0" strokeWidth={1.8} />
+                <span className="flex-1 truncate">{label}</span>
+                {count != null && count > 0 && (
+                  <span
+                    className={cn(
+                      "font-mono text-[10px] font-semibold",
+                      active ? "text-bg/70" : "text-mut",
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

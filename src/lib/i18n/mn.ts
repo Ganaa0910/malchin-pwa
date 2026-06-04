@@ -26,6 +26,8 @@ export const mn = {
     alerts: "Мэдэгдэл",
     weather: "Цаг агаар",
     profile: "Профайл",
+    groupMain: "Үндсэн",
+    groupSettings: "Тохиргоо",
   },
   polygon: {
     title: "Виртуал хашаа",
