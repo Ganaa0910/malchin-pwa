@@ -117,7 +117,10 @@ export const mn = {
     },
     tempUnit: "°C",
     windUnit: "км/ц",
+    windMs: "м/с",
     forecastDays: "7 хоног",
+    updated: "шинэчилсэн",
+    riskTitle: "Зудны эрсдэл",
   },
   health: {
     lame: "Доголж байна",
@@ -218,6 +221,9 @@ export const mn = {
     statusOnline: "Идэвхтэй",
     statusOffline: "Идэвхгүй",
     baseStation: "Гол станц",
+    warningsTitle: "GPS төхөөрөмжийн анхааруулга",
+    draining: "Дуусч байна",
+    allNormal: "Бүх төхөөрөмж хэвийн",
   },
   onboarding: {
     skip: "Алгасах",

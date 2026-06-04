@@ -1,44 +1,42 @@
-"use client";
-
-import { Sun, Cloud, CloudRain, CloudSnow, Snowflake, Wind } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { format } from "date-fns";
 import { mn } from "@/lib/i18n/mn";
 import type { Weather, Condition } from "@/types/weather";
 
-const COND_ICON: Record<Condition, LucideIcon> = {
-  sunny: Sun,
-  cloudy: Cloud,
-  rain: CloudRain,
-  snow: CloudSnow,
-  blizzard: Snowflake,
-  windy: Wind,
+const COND_EMOJI: Record<Condition, string> = {
+  sunny: "☀️",
+  cloudy: "☁️",
+  rain: "🌧",
+  snow: "❄️",
+  blizzard: "🌨",
+  windy: "💨",
 };
 
 export function WeatherCard({ weather }: { weather: Weather }) {
-  const Icon = COND_ICON[weather.currentConditions];
+  const windKmh = weather.forecast[0]?.windKmh;
+  const windMs = windKmh != null ? Math.round(windKmh / 3.6) : null;
+
   return (
-    <article
-      className="rounded-md border bg-card text-card-foreground p-4"
-      
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            {weather.locationName}
-          </p>
-          <p className="text-5xl leading-none mt-1">
-            {Math.round(weather.currentTempC)}°
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {mn.weather.conditions[weather.currentConditions]}
-          </p>
-        </div>
-        <Icon className="size-16 text-primary" aria-hidden />
+    <article className="rounded-xl border border-line bg-surface p-5">
+      <div className="font-mono text-[11px] uppercase tracking-wide text-mut">
+        {weather.locationName}
       </div>
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono mt-3">
-        Шинэчилсэн {format(new Date(weather.updatedAt), "HH:mm")}
-      </p>
+      <div className="mt-2 flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-6xl font-bold leading-none">
+            {Math.round(weather.currentTempC)}°
+          </div>
+          <div className="mt-1.5 text-[15px] text-ink-2">
+            {mn.weather.conditions[weather.currentConditions]}
+            {windMs != null && ` · салхи ${windMs}${mn.weather.windMs}`}
+          </div>
+        </div>
+        <div className="flex size-[74px] shrink-0 items-center justify-center rounded-[18px] bg-brand-soft text-[38px]">
+          {COND_EMOJI[weather.currentConditions]}
+        </div>
+      </div>
+      <div className="mt-3.5 font-mono text-[10px] uppercase tracking-wide text-mut-2">
+        // {mn.weather.updated} {format(new Date(weather.updatedAt), "HH:mm")}
+      </div>
     </article>
   );
 }

@@ -1,4 +1,3 @@
-import { AlertOctagon } from "lucide-react";
 import { mn } from "@/lib/i18n/mn";
 import { cn } from "@/lib/utils";
 import type { DzudRisk } from "@/types/weather";
@@ -11,20 +10,12 @@ const LEVEL: Record<DzudRisk, number> = {
   extreme: 5,
 };
 
-const RISK_TEXT: Record<DzudRisk, string> = {
-  low: "text-muted-foreground",
-  moderate: "text-foreground",
-  elevated: "text-warning",
-  high: "text-destructive",
-  extreme: "text-destructive",
-};
-
-const BAR_COLOR: Record<DzudRisk, string> = {
-  low: "bg-muted-foreground",
-  moderate: "bg-foreground",
-  elevated: "bg-warning",
-  high: "bg-destructive",
-  extreme: "bg-destructive",
+const RISK: Record<DzudRisk, { badge: string; bar: string }> = {
+  low: { badge: "bg-success-soft text-success", bar: "bg-success" },
+  moderate: { badge: "bg-bg-2 text-ink-2", bar: "bg-ink-2" },
+  elevated: { badge: "bg-amber-soft text-amber", bar: "bg-amber" },
+  high: { badge: "bg-danger-soft text-danger", bar: "bg-danger" },
+  extreme: { badge: "bg-danger-soft text-danger", bar: "bg-danger" },
 };
 
 export function DzudRiskCard({
@@ -36,43 +27,42 @@ export function DzudRiskCard({
 }) {
   const level = LEVEL[risk];
   return (
-    <article className="rounded-lg border bg-card text-card-foreground p-4 space-y-3">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <AlertOctagon className="size-4" aria-hidden />
-          <p className="text-sm">{mn.dzud.label}</p>
-        </div>
-        <p className={cn("text-sm font-semibold", RISK_TEXT[risk])}>
-          {mn.dzud[risk]}
-        </p>
-      </header>
+    <article className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[13px] font-bold">{mn.weather.riskTitle}</div>
+        <span
+          className={cn(
+            "rounded-[5px] px-2 py-0.5 font-mono text-[11px] font-bold",
+            RISK[risk].badge,
+          )}
+        >
+          {mn.dzud[risk].toUpperCase()}
+        </span>
+      </div>
 
-      <div className="flex gap-1" aria-hidden>
+      <div className="flex h-1.5 gap-0.5" aria-hidden>
         {[1, 2, 3, 4, 5].map((i) => (
           <span
             key={i}
             className={cn(
-              "h-1 flex-1 rounded-full",
-              i <= level ? BAR_COLOR[risk] : "bg-muted",
+              "flex-1 rounded-full",
+              i <= level ? RISK[risk].bar : "bg-bg-2",
             )}
           />
         ))}
       </div>
 
-      <ul className="space-y-1.5">
-        {factors.map((f) => (
-          <li
-            key={f}
-            className="text-sm text-muted-foreground flex gap-2 items-start"
-          >
-            <span
-              aria-hidden
-              className="mt-1.5 size-1 rounded-full bg-muted-foreground shrink-0"
-            />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
+      {factors.map((f) => (
+        <div
+          key={f}
+          className="flex items-start gap-1.5 font-mono text-[11px] leading-relaxed text-mut"
+        >
+          <span aria-hidden className="text-brand">
+            •
+          </span>
+          <span>{f}</span>
+        </div>
+      ))}
     </article>
   );
 }

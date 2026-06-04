@@ -1,133 +1,89 @@
 "use client";
 
-import { Battery, BatteryWarning, Radio, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { cn } from "@/lib/utils";
 import { getDb } from "@/lib/db";
 import { mn } from "@/lib/i18n/mn";
-import type { Device } from "@/types/device";
 
 export function DeviceAlertsPanel() {
   const data = useLiveQuery(async () => {
     const db = getDb();
-    const [lowBattery, baseStations] = await Promise.all([
+    const [low, bases] = await Promise.all([
       db.devices.where("battery").below(15).toArray(),
       db.devices.where("type").equals("base-station").toArray(),
     ]);
-    return { lowBattery, baseStations };
+    return {
+      lowCollars: low.filter((d) => d.type === "collar"),
+      offlineBases: bases.filter((b) => !b.online),
+    };
   }, []);
 
   if (!data) return null;
-  const { lowBattery, baseStations } = data;
-  const lowBatteryCollars = lowBattery.filter((d) => d.type === "collar");
+  const { lowCollars, offlineBases } = data;
+  const empty = lowCollars.length === 0 && offlineBases.length === 0;
 
   return (
-    <section aria-labelledby="device-alerts" className="space-y-2">
-      <h2
-        id="device-alerts"
-        className="text-lg px-1 flex items-center gap-2"
-      >
-        <Radio className="size-5" aria-hidden />
-        {mn.device.title}
-      </h2>
-
-      <ul className="space-y-2">
-        {baseStations.map((b) => (
-          <BaseStationItem key={b.id} device={b} />
-        ))}
-        {lowBatteryCollars.length > 0 && (
-          <li
-            className="rounded-md border bg-card text-card-foreground p-3"
-            
-          >
-            <div className="flex items-center gap-3">
-              <span
-                aria-hidden
-                className="size-10 shrink-0 rounded-full flex items-center justify-center bg-destructive/15 text-destructive"
-              >
-                <BatteryWarning className="size-5" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold leading-tight">
-                  {lowBatteryCollars.length} GPS дуусч байна
-                </p>
-                <p className="text-xs text-muted-foreground leading-tight mt-0.5">
-                  Цэнэг 15%-аас бага
-                </p>
-              </div>
-            </div>
-            <ul className="mt-3 space-y-1">
-              {lowBatteryCollars.slice(0, 5).map((d) => (
-                <LowBatteryRow key={d.id} device={d} />
-              ))}
-            </ul>
-          </li>
-        )}
-      </ul>
-    </section>
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <h3 className="mb-2 text-sm font-bold">{mn.device.warningsTitle}</h3>
+      {empty ? (
+        <p className="py-6 text-center font-mono text-sm text-mut">
+          {mn.device.allNormal}
+        </p>
+      ) : (
+        <div>
+          {lowCollars.slice(0, 8).map((d) => (
+            <Row
+              key={d.id}
+              id={d.id}
+              href={d.animalId ? `/herd/${d.animalId}` : undefined}
+              text={`→ ${d.animalId ?? "—"} · цэнэг ${d.battery}%`}
+              tag={mn.device.draining.toUpperCase()}
+            />
+          ))}
+          {offlineBases.map((b) => (
+            <Row
+              key={b.id}
+              id={b.id}
+              text={`${mn.device.baseStation} · ${mn.device.statusOffline}`}
+              tag={mn.device.statusOffline.toUpperCase()}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function BaseStationItem({ device }: { device: Device }) {
-  const Online = device.online ? Wifi : WifiOff;
-  return (
-    <li
-      className="rounded-md border bg-card text-card-foreground p-3"
-      
-    >
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className={cn(
-            "size-10 shrink-0 rounded-full flex items-center justify-center",
-            device.online
-              ? "bg-success/15 text-success"
-              : "bg-destructive/15 text-destructive",
-          )}
-        >
-          <Online className="size-5" />
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold leading-tight">
-            {mn.device.baseStation} · {device.id}
-          </p>
-          <p className="text-xs text-muted-foreground leading-tight mt-0.5">
-            {device.online ? mn.device.statusOnline : mn.device.statusOffline}
-            {" · "}
-            <span className="font-mono">{mn.device.firmware} {device.firmwareVersion}</span>
-          </p>
-        </div>
-        <div className="text-right shrink-0">
-          <p className="text-xs text-muted-foreground">{mn.device.signal}</p>
-          <p className="font-mono text-sm">{device.signal}%</p>
-        </div>
-      </div>
-    </li>
+function Row({
+  id,
+  text,
+  tag,
+  href,
+}: {
+  id: string;
+  text: string;
+  tag: string;
+  href?: string;
+}) {
+  const inner = (
+    <>
+      <span className="font-mono text-[11px] font-semibold text-info">{id}</span>
+      <span className="min-w-0 truncate font-mono text-[11px] text-ink">
+        {text}
+      </span>
+      <span className="rounded-[3px] bg-danger-soft px-1.5 py-0.5 font-mono text-[9px] font-bold text-danger">
+        {tag}
+      </span>
+    </>
   );
-}
-
-function LowBatteryRow({ device }: { device: Device }) {
-  return (
-    <li className="flex items-center justify-between gap-2 text-xs">
-      <Link
-        href={device.animalId ? `/herd/${device.animalId}` : "#"}
-        className="flex items-center gap-2 truncate text-foreground hover:underline"
-      >
-        <Battery className="size-3 text-destructive shrink-0" aria-hidden />
-        <span className="font-mono">{device.id}</span>
-        {device.animalId && (
-          <>
-            <span className="text-muted-foreground" aria-hidden>
-              →
-            </span>
-            <span className="font-mono text-muted-foreground">
-              {device.animalId}
-            </span>
-          </>
-        )}
-      </Link>
-      <span className="font-mono text-destructive shrink-0">{device.battery}%</span>
-    </li>
+  const cls =
+    "grid grid-cols-[auto_1fr_auto] items-center gap-3.5 border-b border-dashed border-line py-2.5 last:border-0";
+  return href ? (
+    <Link href={href} className={cn(cls, "transition-opacity hover:opacity-80")}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={cls}>{inner}</div>
   );
 }
