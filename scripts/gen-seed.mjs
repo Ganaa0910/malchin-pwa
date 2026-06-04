@@ -78,7 +78,7 @@ const SHEEP_BREEDS = [
 const GOAT_BREEDS = [
   "Монгол ямаа", "Гоби ямаа", "Хан хөхийн ямаа",
 ];
-const COW_BREEDS = ["Монгол үхэр", "Селенгэ үхэр", "Барууны үхэр"];
+const COW_BREEDS = ["Монгол үхэр", "Барууны үхэр"];
 
 const COLORS_BASE = [
   "Хүрэн", "Хээр", "Бор", "Шар", "Хар", "Алаг", "Цагаан", "Хөх", "Бууралд",
@@ -335,7 +335,7 @@ breachAnimals.forEach((a, i) => {
     id: `AL-${String(i + 1).padStart(3, "0")}`,
     type: "breach",
     priority: "critical",
-    title: `${a.name ?? a.id} хил гарсан`,
+    title: `${a.name ?? a.id} бэлчээр давсан`,
     message: `${a.species} ${a.id} бэлчээрээс ${Math.round(
       a.distanceFromBaseM,
     )} м-ийн зайд. Эргүүлэх хэрэгтэй.`,

@@ -70,7 +70,7 @@ export default function DesignPreview() {
               АНХААР
             </span>
             <span className="rounded-md bg-danger-soft px-2 py-0.5 font-mono text-[11px] font-bold text-danger">
-              ХИЛ ГАРСАН
+              БЭЛЧЭЭР ДАВСАН
             </span>
             <span className="rounded-md bg-info-soft px-2 py-0.5 font-mono text-[11px] font-bold text-info">
               МЭДЭЭЛЭЛ
@@ -105,7 +105,7 @@ export default function DesignPreview() {
               <CardContent className="flex items-center gap-2">
                 <Badge variant="secondary">Сүрэг</Badge>
                 <span className="rounded-md bg-danger-soft px-2 py-0.5 font-mono text-[11px] font-bold text-danger">
-                  ХИЛ ГАРСАН
+                  БЭЛЧЭЭР ДАВСАН
                 </span>
               </CardContent>
               <CardFooter className="gap-2">

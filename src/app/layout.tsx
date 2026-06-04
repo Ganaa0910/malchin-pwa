@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { RegisterPWA } from "@/components/pwa/RegisterPWA";
 import { OfflineBadge } from "@/components/pwa/OfflineBadge";
 import { BreachOverlay } from "@/components/alerts/BreachOverlay";
-import { BreachDevTrigger } from "@/components/alerts/BreachDevTrigger";
 import "./globals.css";
 
 const inter = Inter({
@@ -62,7 +61,6 @@ export default function RootLayout({
           <OfflineBadge />
           {children}
           <BreachOverlay />
-          <BreachDevTrigger />
         </ThemeProvider>
       </body>
     </html>
