@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/sheet";
 import { MapView } from "@/components/map/MapView";
 import { Topbar } from "@/components/nav/Topbar";
-import { useAnimals, useOwner, usePolygons } from "@/lib/db/hooks";
+import { useAnimals, useOwner, usePolygons, useZones } from "@/lib/db/hooks";
 import { addPolygon, deletePolygon, setPolygonActive } from "@/lib/db/polygons";
+import { deleteZone, setZoneActive } from "@/lib/db/zones";
 import {
   pointInPolygon,
   distanceToPolygonM,
@@ -21,7 +22,6 @@ import {
 import { mn } from "@/lib/i18n/mn";
 import { cn } from "@/lib/utils";
 import type { AnimalStatus } from "@/types/animal";
-import type { CustomPolygon } from "@/types/polygon";
 
 const STATUS_DOT: Record<AnimalStatus, string> = {
   safe: "bg-success",
@@ -30,7 +30,29 @@ const STATUS_DOT: Record<AnimalStatus, string> = {
   offline: "bg-mut-2",
 };
 
-const isActive = (p: CustomPolygon) => p.active !== false;
+/**
+ * One unified fence, sourced from either the imported `zones` table
+ * (GPX/pasture zones) or the user-drawn `polygons` table. Toggle/delete
+ * dispatch back to the correct table via `source`.
+ */
+type Fence = {
+  id: string;
+  name: string;
+  coordinates: [number, number][];
+  color: string;
+  active: boolean;
+  source: "zone" | "polygon";
+};
+
+function setFenceActive(f: Fence, active: boolean): Promise<void> {
+  return f.source === "zone"
+    ? setZoneActive(f.id, active)
+    : setPolygonActive(f.id, active);
+}
+
+function deleteFence(f: Fence): Promise<void> {
+  return f.source === "zone" ? deleteZone(f.id) : deletePolygon(f.id);
+}
 
 function fmtDist(m: number): string {
   return m < 1000 ? `${Math.round(m)} м` : `${(m / 1000).toFixed(1)} км`;
@@ -38,6 +60,7 @@ function fmtDist(m: number): string {
 
 export function PolygonScreen() {
   const polygons = usePolygons();
+  const zones = useZones();
   const animals = useAnimals();
   const owner = useOwner();
 
@@ -48,12 +71,35 @@ export function PolygonScreen() {
   const [draft, setDraft] = useState<[number, number][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const selected = polygons.find((p) => p.id === selectedId) ?? null;
-  const activeCount = polygons.filter(isActive).length;
-  const inactiveCount = polygons.length - activeCount;
+  // Imported zones + user-drawn polygons, unified into one fence list.
+  const fences = useMemo<Fence[]>(
+    () => [
+      ...zones.map((z) => ({
+        id: z.id,
+        name: z.name,
+        coordinates: z.coordinates,
+        color: z.color ?? "#16a34a",
+        active: z.active !== false,
+        source: "zone" as const,
+      })),
+      ...polygons.map((p) => ({
+        id: p.id,
+        name: p.name,
+        coordinates: p.coordinates,
+        color: p.color,
+        active: p.active !== false,
+        source: "polygon" as const,
+      })),
+    ],
+    [zones, polygons],
+  );
+
+  const selected = fences.find((f) => f.id === selectedId) ?? null;
+  const activeCount = fences.filter((f) => f.active).length;
+  const inactiveCount = fences.length - activeCount;
   const totalArea = useMemo(
-    () => polygons.reduce((s, p) => s + polygonAreaKm2(p.coordinates), 0),
-    [polygons],
+    () => fences.reduce((s, f) => s + polygonAreaKm2(f.coordinates), 0),
+    [fences],
   );
 
   const distances = useMemo(() => {
@@ -81,13 +127,13 @@ export function PolygonScreen() {
   }
   async function saveDraw() {
     if (draft.length < 3) return;
-    await addPolygon(draft, `${mn.nav.polygon} ${polygons.length + 1}`);
+    await addPolygon(draft, `${mn.nav.polygon} ${fences.length + 1}`);
     setDrawing(false);
     setDraft([]);
   }
-  async function handleDelete(id: string) {
-    await deletePolygon(id);
-    if (selectedId === id) setSelectedId(null);
+  async function handleDelete(fence: Fence) {
+    await deleteFence(fence);
+    if (selectedId === fence.id) setSelectedId(null);
   }
 
   return (
@@ -95,7 +141,7 @@ export function PolygonScreen() {
       <Topbar
         title={mn.polygon.title}
         sub={
-          drawing ? mn.polygon.drawActive : `${polygons.length} ${mn.polygon.countLabel}`
+          drawing ? mn.polygon.drawActive : `${fences.length} ${mn.polygon.countLabel}`
         }
       />
 
@@ -108,11 +154,13 @@ export function PolygonScreen() {
             zones={[]}
             baseLat={baseLat}
             baseLng={baseLng}
-            customPolygons={polygons.filter(isActive).map((p) => ({
-              id: p.id,
-              coordinates: p.coordinates,
-              color: p.color,
-            }))}
+            customPolygons={fences
+              .filter((f) => f.active)
+              .map((f) => ({
+                id: f.id,
+                coordinates: f.coordinates,
+                color: f.color,
+              }))}
             selectedPolygonId={selectedId}
             onPolygonClick={drawing ? undefined : (id) => setSelectedId(id)}
             draftPolygon={drawing ? draft : undefined}
@@ -197,27 +245,27 @@ export function PolygonScreen() {
               <b className="text-ink">{totalArea.toFixed(1)} км²</b>
             </span>
             <span>
-              <b className="text-ink">{polygons.length}</b> {mn.polygon.countLabel}
+              <b className="text-ink">{fences.length}</b> {mn.polygon.countLabel}
             </span>
           </div>
 
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3.5 pb-[calc(env(safe-area-inset-bottom)+84px)] pt-1 md:pb-4">
-            {polygons.length === 0 ? (
+            {fences.length === 0 ? (
               <p className="py-10 text-center font-mono text-sm text-mut">
                 {mn.polygon.empty}
               </p>
             ) : (
-              polygons.map((p) => (
+              fences.map((f) => (
                 <FenceItem
-                  key={p.id}
-                  polygon={p}
+                  key={f.id}
+                  fence={f}
                   animalsInside={
                     animals.filter((a) =>
-                      pointInPolygon(a.lat, a.lng, p.coordinates),
+                      pointInPolygon(a.lat, a.lng, f.coordinates),
                     ).length
                   }
-                  onSelect={() => setSelectedId(p.id)}
-                  onToggle={() => setPolygonActive(p.id, !isActive(p))}
+                  onSelect={() => setSelectedId(f.id)}
+                  onToggle={() => setFenceActive(f, !f.active)}
                 />
               ))
             )}
@@ -235,7 +283,7 @@ export function PolygonScreen() {
                 <button
                   type="button"
                   aria-label={mn.polygon.delete}
-                  onClick={() => handleDelete(selected.id)}
+                  onClick={() => handleDelete(selected)}
                   className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 font-mono text-[11px] font-semibold text-mut transition-colors hover:border-danger hover:text-danger"
                 >
                   <Trash2 className="size-3.5" /> {mn.polygon.delete}
@@ -282,18 +330,18 @@ export function PolygonScreen() {
 }
 
 function FenceItem({
-  polygon,
+  fence,
   animalsInside,
   onSelect,
   onToggle,
 }: {
-  polygon: CustomPolygon;
+  fence: Fence;
   animalsInside: number;
   onSelect: () => void;
   onToggle: () => void;
 }) {
-  const active = isActive(polygon);
-  const area = polygonAreaKm2(polygon.coordinates);
+  const active = fence.active;
+  const area = polygonAreaKm2(fence.coordinates);
   return (
     <div
       className={cn(
@@ -314,16 +362,16 @@ function FenceItem({
               !active && "grayscale",
             )}
             style={{
-              backgroundColor: `${polygon.color}22`,
-              borderColor: polygon.color,
+              backgroundColor: `${fence.color}22`,
+              borderColor: fence.color,
             }}
           />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[13px] font-bold">
-              {polygon.name}
+              {fence.name}
             </span>
             <span className="font-mono text-[10px] text-mut">
-              POLYGON · {polygon.coordinates.length} {mn.polygon.points}
+              POLYGON · {fence.coordinates.length} {mn.polygon.points}
             </span>
           </span>
         </button>
