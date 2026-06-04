@@ -6,130 +6,94 @@ import {
   UsersRound,
   ShieldCheck,
   LifeBuoy,
-  ChevronRight,
 } from "lucide-react";
-import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import type { LucideIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
 import owner from "@/data/owner.json";
 
-const LINKS = [
-  {
-    href: "/geofence",
-    label: mn.geofence.title,
-    sub: "8 бүс",
-    Icon: PencilRuler,
-  },
-  {
-    href: "/onboarding",
-    label: "Дахин үзэх",
-    sub: "3 алхам",
-    Icon: Sparkles,
-  },
-  {
-    href: "/login",
-    label: "Нэвтрэх",
-    sub: "Жишээ",
-    Icon: LogIn,
-  },
-  {
-    href: "/manager",
-    label: mn.manager.title,
-    sub: mn.manager.comingSoon,
-    Icon: UsersRound,
-  },
-  {
-    href: "/admin",
-    label: mn.admin.title,
-    sub: mn.admin.comingSoon,
-    Icon: ShieldCheck,
-  },
-] as const;
+type MenuLink = {
+  href: string;
+  label: string;
+  sub: string;
+  Icon: LucideIcon;
+  mobileOnly?: boolean;
+};
+
+const LINKS: MenuLink[] = [
+  { href: "/help", label: mn.help.title, sub: mn.help.contact.title, Icon: LifeBuoy, mobileOnly: true },
+  { href: "/geofence", label: mn.geofence.title, sub: "8 бүс", Icon: PencilRuler },
+  { href: "/onboarding", label: "Дахин үзэх", sub: "3 алхам", Icon: Sparkles },
+  { href: "/login", label: "Нэвтрэх", sub: "Жишээ", Icon: LogIn },
+  { href: "/manager", label: mn.manager.title, sub: mn.manager.comingSoon, Icon: UsersRound },
+  { href: "/admin", label: mn.admin.title, sub: mn.admin.comingSoon, Icon: ShieldCheck },
+];
+
+const INFO: { label: string; value: string }[] = [
+  { label: mn.profile.phone, value: owner.phone },
+  { label: mn.profile.aimag, value: owner.aimag },
+  { label: mn.profile.sum, value: owner.sum },
+  { label: mn.profile.bagh, value: owner.bagh },
+  { label: mn.profile.baseCamp, value: owner.baseName },
+];
 
 export default function ProfilePage() {
   return (
-    <>
-      <ScreenHeader title={mn.nav.profile} />
-      <div className="px-4 pt-2 pb-nav space-y-6">
-        <section className="rounded-lg border bg-card text-card-foreground p-4">
-          <p className="text-xs text-muted-foreground">{mn.profile.owner}</p>
-          <p className="text-lg font-semibold mt-0.5">{owner.name}</p>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-4">
-            <dt className="text-muted-foreground">{mn.profile.phone}</dt>
-            <dd className="font-mono text-right">{owner.phone}</dd>
-            <dt className="text-muted-foreground">{mn.profile.aimag}</dt>
-            <dd className="text-right">{owner.aimag}</dd>
-            <dt className="text-muted-foreground">{mn.profile.sum}</dt>
-            <dd className="text-right">{owner.sum}</dd>
-            <dt className="text-muted-foreground">{mn.profile.bagh}</dt>
-            <dd className="text-right">{owner.bagh}</dd>
-            <dt className="text-muted-foreground">{mn.profile.baseCamp}</dt>
-            <dd className="text-right">{owner.baseName}</dd>
-          </dl>
-        </section>
-
-        <section aria-label={mn.theme.label} className="space-y-2">
-          <h2 className="text-sm font-medium text-muted-foreground px-1">
-            {mn.theme.label}
-          </h2>
-          <ThemeToggle className="w-full" />
-        </section>
-
-        <section aria-label="Бусад" className="space-y-2">
-          <h2 className="text-sm font-medium text-muted-foreground px-1">
-            Бусад
-          </h2>
-          <ul className="rounded-lg border bg-card divide-y overflow-hidden">
-            {/* Help — mobile only; desktop reaches it from the sidebar */}
-            <li className="md:hidden">
-              <Link
-                href="/help"
-                className="tap flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
-              >
-                <LifeBuoy
-                  className="size-4 text-muted-foreground shrink-0"
-                  aria-hidden
-                />
-                <span className="flex-1 min-w-0 text-sm font-medium">
-                  {mn.help.title}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {mn.help.contact.title}
-                </span>
-                <ChevronRight
-                  className="size-4 text-muted-foreground shrink-0"
-                  aria-hidden
-                />
-              </Link>
-            </li>
-            {LINKS.map(({ href, label, sub, Icon }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="tap flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
-                >
-                  <Icon
-                    className="size-4 text-muted-foreground shrink-0"
-                    aria-hidden
-                  />
-                  <span className="flex-1 min-w-0 text-sm font-medium">
-                    {label}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{sub}</span>
-                  <ChevronRight
-                    className="size-4 text-muted-foreground shrink-0"
-                    aria-hidden
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <p className="text-xs text-muted-foreground text-center pt-2 font-mono">
-          Belchee v0.0.1
+    <div className="px-4 pb-nav pt-4 md:px-6 md:pt-5">
+      {/* Hero / personal info */}
+      <section className="mb-3.5 rounded-xl border border-line bg-surface p-5">
+        <p className="font-mono text-[11px] uppercase tracking-wide text-mut">
+          {mn.profile.owner}
         </p>
+        <h1 className="mb-4 mt-1 text-[26px] font-bold leading-none">
+          {owner.name}
+        </h1>
+        <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+          {INFO.map(({ label, value }) => (
+            <div
+              key={label}
+              className="flex items-center justify-between border-b border-dashed border-line py-2.5 font-mono text-xs"
+            >
+              <dt className="text-mut">{label}</dt>
+              <dd className="font-bold text-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* Theme */}
+      <section className="mb-3.5 rounded-xl border border-line bg-surface p-4">
+        <h3 className="mb-3 font-mono text-xs font-bold uppercase tracking-wide text-mut">
+          // {mn.theme.label}
+        </h3>
+        <ThemeToggle className="w-full" />
+      </section>
+
+      {/* Menu */}
+      <div className="overflow-hidden rounded-xl border border-line bg-surface">
+        {LINKS.map(({ href, label, sub, Icon, mobileOnly }) => (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex items-center gap-3 border-b border-line px-4 py-3.5 text-sm font-semibold transition-colors last:border-0 hover:bg-bg-2",
+              mobileOnly && "md:hidden",
+            )}
+          >
+            <Icon className="size-[18px] shrink-0 text-mut-2" aria-hidden />
+            <span className="min-w-0 flex-1">{label}</span>
+            <span className="font-mono text-[11px] text-mut">{sub}</span>
+            <span aria-hidden className="text-mut-2">
+              ›
+            </span>
+          </Link>
+        ))}
       </div>
-    </>
+
+      <p className="pt-5 text-center font-mono text-[11px] text-mut-2">
+        Belchee v0.0.1
+      </p>
+    </div>
   );
 }

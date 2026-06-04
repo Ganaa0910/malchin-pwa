@@ -26,10 +26,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     <div
       role="radiogroup"
       aria-label={mn.theme.label}
-      className={cn(
-        "inline-grid grid-cols-3 gap-1 rounded-lg border bg-card p-1",
-        className,
-      )}
+      className={cn("grid grid-cols-3 gap-2", className)}
     >
       {OPTIONS.map(({ value, label, Icon }) => {
         const selected = active === value;
@@ -42,14 +39,14 @@ export function ThemeToggle({ className }: { className?: string }) {
             aria-label={label}
             onClick={() => setTheme(value)}
             className={cn(
-              "tap flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5",
-              "text-[11px] font-medium transition-colors",
+              "flex flex-col items-center justify-center gap-1.5 rounded-[9px] border py-3.5",
+              "font-mono text-xs font-bold transition-colors [&_svg]:size-[18px]",
               selected
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                ? "border-ink bg-ink text-bg"
+                : "border-line bg-bg-2 text-ink-2 hover:border-line-2",
             )}
           >
-            <Icon className={cn("size-4", selected && "text-primary")} />
+            <Icon />
             {label}
           </button>
         );
