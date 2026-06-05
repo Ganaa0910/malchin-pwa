@@ -8,8 +8,14 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = new URL(path, BASE).toString();
   const res = await fetch(url, {
-    headers: { "Accept": "application/json", "Content-Type": "application/json" },
     ...options,
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      // Bypass the ngrok-free interstitial when the backend is tunneled through ngrok.
+      "ngrok-skip-browser-warning": "true",
+      ...(options?.headers as Record<string, string> | undefined),
+    },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
