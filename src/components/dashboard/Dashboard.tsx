@@ -1,25 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Bell, Plus, Minus, Crosshair } from "lucide-react";
-import { useAnimals, useZones, useOwner } from "@/lib/db/hooks";
+import { useAnimals, useZones, useOwner, usePolygons } from "@/lib/db/hooks";
 import { MapView } from "@/components/map/MapView";
 import { AnimalStatusSheet } from "@/components/animal/AnimalStatusSheet";
 import { Topbar, TopbarIcon } from "@/components/nav/Topbar";
 import { UrgentRail } from "./UrgentRail";
 import { mn } from "@/lib/i18n/mn";
 import { cn } from "@/lib/utils";
-import type { Animal } from "@/types/animal";
-
-type Species = Animal["species"];
-type SpeciesFilter = "all" | Species;
 
 export function Dashboard() {
+  const router = useRouter();
   const animals = useAnimals();
   const zones = useZones();
+  const polygons = usePolygons();
   const owner = useOwner();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [species, setSpecies] = useState<SpeciesFilter>("all");
   const [recenter, setRecenter] = useState(0);
   const [zoomIn, setZoomIn] = useState(0);
   const [zoomOut, setZoomOut] = useState(0);
@@ -42,16 +40,13 @@ export function Dashboard() {
     return c;
   }, [animals]);
 
-  // Species chips derived from the actual herd (БҮГД + present species).
-  const speciesChips = useMemo(() => {
-    const m = new Map<Species, number>();
-    for (const a of animals) m.set(a.species, (m.get(a.species) ?? 0) + 1);
-    return [...m.entries()];
-  }, [animals]);
-
-  const shown = useMemo(
-    () => (species === "all" ? animals : animals.filter((a) => a.species === species)),
-    [animals, species],
+  // User-drawn virtual fences (Виртуал хашаа) overlaid on the map alongside zones.
+  const customPolygons = useMemo(
+    () =>
+      polygons
+        .filter((p) => p.active !== false)
+        .map((p) => ({ id: p.id, coordinates: p.coordinates, color: p.color })),
+    [polygons],
   );
 
   const focusAnimal = (id: string) => {
@@ -65,13 +60,16 @@ export function Dashboard() {
       <Topbar
         title={mn.nav.home}
         sub={loc}
-        live="LIVE · 2с"
         right={
           <>
             <TopbarIcon aria-label="Хайх">
               <Search />
             </TopbarIcon>
-            <TopbarIcon aria-label={mn.nav.alerts} dot>
+            <TopbarIcon
+              aria-label={mn.nav.alerts}
+              dot
+              onClick={() => router.push("/alerts")}
+            >
               <Bell />
             </TopbarIcon>
           </>
@@ -81,8 +79,9 @@ export function Dashboard() {
       <div className="relative flex-1 overflow-hidden">
         <MapView
           className="absolute inset-0"
-          animals={shown}
+          animals={animals}
           zones={zones}
+          customPolygons={customPolygons}
           baseLat={baseLat}
           baseLng={baseLng}
           selectedAnimalId={selectedId}
@@ -95,11 +94,11 @@ export function Dashboard() {
           focusLng={focus.lng}
         />
 
-        {/* Top overlays — stacked on mobile, split left/right on desktop */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col gap-2 p-3 md:flex-row md:items-start md:justify-between">
+        {/* Top overlays */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col gap-2 p-3">
           {/* Status panel */}
           <div className="pointer-events-auto w-full rounded-xl border border-line bg-bg/95 p-4 shadow-lg backdrop-blur md:w-[300px]">
-            <div className="font-mono text-xs text-mut">// Сүргийн төлөв</div>
+            <div className="font-mono text-xs text-mut">Сүргийн төлөв</div>
             <div className="mt-0.5 text-[17px] font-bold">{loc}</div>
             <div className="mt-2.5 grid grid-cols-4 gap-2">
               <Stat v={counts.total} l="Нийт" />
@@ -107,28 +106,6 @@ export function Dashboard() {
               <Stat v={counts.warning} l="Анхаар" tone="amber" />
               <Stat v={counts.danger} l="Давсан" tone="danger" />
             </div>
-          </div>
-
-          {/* Species filter bar */}
-          <div
-            className="pointer-events-auto flex gap-1 overflow-x-auto rounded-[10px] border border-line bg-bg/95 p-1.5 shadow-lg backdrop-blur"
-            style={{ scrollbarWidth: "none" }}
-          >
-            <SpeciesChip
-              label={mn.herd.filterAll}
-              count={counts.total}
-              active={species === "all"}
-              onClick={() => setSpecies("all")}
-            />
-            {speciesChips.map(([sp, n]) => (
-              <SpeciesChip
-                key={sp}
-                label={mn.species[sp].toUpperCase()}
-                count={n}
-                active={species === sp}
-                onClick={() => setSpecies(sp)}
-              />
-            ))}
           </div>
         </div>
 
@@ -150,7 +127,7 @@ export function Dashboard() {
 
         {/* Urgent card strip */}
         <UrgentRail
-          animals={shown}
+          animals={animals}
           selectedId={selectedId}
           onSelect={focusAnimal}
         />
@@ -193,32 +170,6 @@ function Stat({
         {l}
       </div>
     </div>
-  );
-}
-
-function SpeciesChip({
-  label,
-  count,
-  active,
-  onClick,
-}: {
-  label: string;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[11px] font-semibold transition-colors",
-        active ? "bg-ink text-bg" : "text-ink-2 hover:bg-surface",
-      )}
-    >
-      {label}
-      <span className="opacity-60">{count}</span>
-    </button>
   );
 }
 

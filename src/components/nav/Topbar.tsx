@@ -21,7 +21,7 @@ export function Topbar({
   return (
     <header
       className={cn(
-        "pt-safe sticky top-0 z-30 flex items-center gap-3.5 border-b border-line bg-bg/85 px-4 py-3.5 backdrop-blur md:px-5",
+        "pt-safe sticky top-0 z-30 flex items-center gap-3.5 border-b border-line bg-bg/85 px-4 py-5 backdrop-blur md:px-5 md:py-6",
         className,
       )}
     >
