@@ -3,16 +3,21 @@
  * Drop this file into src/lib/api.ts
  */
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
+// Default to same-origin so the deployed app calls its own Next.js /api/* proxy
+// routes (which talk to Traccar server-side). Set NEXT_PUBLIC_API_URL only to
+// point at a separate, externally-hosted backend instead.
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = new URL(path, BASE).toString();
+  // Empty BASE → keep the path relative so fetch resolves it against the
+  // current origin (works in dev, on Vercel, and behind any custom domain).
+  const url = BASE ? new URL(path, BASE).toString() : path;
   const res = await fetch(url, {
     ...options,
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json",
-      // Bypass the ngrok-free interstitial when the backend is tunneled through ngrok.
+      // Bypass the ngrok-free interstitial when BASE points at an ngrok tunnel.
       "ngrok-skip-browser-warning": "true",
       ...(options?.headers as Record<string, string> | undefined),
     },
