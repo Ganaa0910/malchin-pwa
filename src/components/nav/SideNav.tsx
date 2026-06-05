@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   MapPinned,
@@ -15,6 +16,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
 import { useAnimals, useAlerts, usePolygons, useOwner } from "@/lib/db/hooks";
+import { geofencesApi } from "@/lib/api";
 
 type NavItem = {
   href: string;
@@ -34,6 +36,13 @@ export function SideNav() {
   const alerts = useAlerts();
   const polygons = usePolygons();
   const owner = useOwner();
+  const [geofenceCount, setGeofenceCount] = useState(0);
+
+  useEffect(() => {
+    geofencesApi.list()
+      .then((list) => setGeofenceCount(list.length))
+      .catch(() => setGeofenceCount(0));
+  }, []);
 
   const main: NavItem[] = [
     { href: "/", label: mn.nav.home, Icon: MapPinned, match: (p) => p === "/" },
@@ -49,7 +58,7 @@ export function SideNav() {
       label: mn.nav.polygon,
       Icon: Hexagon,
       match: (p) => p.startsWith("/polygon"),
-      count: polygons.length,
+      count: polygons.length + geofenceCount,
     },
     {
       href: "/alerts",

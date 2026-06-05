@@ -8,6 +8,8 @@ import {
   CircleMarker,
   Polygon,
   Polyline,
+  Popup,
+  Tooltip,
   useMap,
   useMapEvents,
 } from "react-leaflet";
@@ -17,8 +19,11 @@ import type { LucideIcon } from "lucide-react";
 
 import type { Animal, AnimalStatus } from "@/types/animal";
 import type { Zone } from "@/types/zone";
+import type { Device, Geofence, Position } from "@/lib/api";
+import { parseWktPolygon } from "@/lib/wkt";
 import { cn } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
+import { timeAgoMn } from "@/lib/time";
 
 const STATUS_COLOR: Record<AnimalStatus, string> = {
   safe: "#16a34a",
@@ -46,7 +51,7 @@ const LAYERS: Record<LayerKey, { label: string; lyrs: string; Icon: LucideIcon }
 const LAYER_ORDER: LayerKey[] = ["satellite", "roadmap", "terrain"];
 
 const tileUrl = (key: LayerKey) =>
-  `https://{s}.google.com/vt/lyrs=${LAYERS[key].lyrs}&x={x}&y={y}&z={z}`;
+  `https://{s}.google.com/vt/lyrs=${LAYERS[key].lyrs}&hl=mn&gl=MN&x={x}&y={y}&z={z}`;
 const TILE_SUBDOMAINS = ["mt0", "mt1", "mt2", "mt3"];
 
 const ATTR = '&copy; <a href="https://www.google.com/maps">Google</a>';
@@ -66,6 +71,8 @@ export interface MapViewLeafletProps {
   baseLng: number;
   onAnimalClick?: (id: string) => void;
   selectedAnimalId?: string | null;
+  onDeviceClick?: (deviceId: number) => void;
+  selectedDeviceId?: number | null;
   routePath?: { lat: number; lng: number }[];
   routeCurrentIdx?: number;
   /** Increment to recenter on base camp. */
@@ -77,6 +84,9 @@ export interface MapViewLeafletProps {
   focusToken?: number;
   focusLat?: number;
   focusLng?: number;
+  geofences?: Geofence[];
+  devices?: Device[];
+  positions?: Position[];
   /** User-drawn custom polygons to render (selectable). */
   customPolygons?: { id: string; coordinates: [number, number][]; color?: string }[];
   selectedPolygonId?: string | null;
@@ -104,14 +114,21 @@ function calcBounds(
   animals: Animal[],
   baseLat: number,
   baseLng: number,
+  geofences?: Geofence[],
+  customPolygons?: { id: string; coordinates: [number, number][] }[],
+  positions?: Position[],
 ): LatLngBoundsLiteral {
-  let minLat = baseLat,
-    maxLat = baseLat,
-    minLng = baseLng,
-    maxLng = baseLng;
+  const startLat = isValidPoint(baseLat, baseLng) ? baseLat : 0;
+  const startLng = isValidPoint(baseLat, baseLng) ? baseLng : 0;
+
+  let minLat = startLat,
+    maxLat = startLat,
+    minLng = startLng,
+    maxLng = startLng;
   for (const z of zones) {
     if (!z.active) continue;
     for (const [la, lo] of z.coordinates) {
+      if (!isValidPoint(la, lo)) continue;
       if (la < minLat) minLat = la;
       if (la > maxLat) maxLat = la;
       if (lo < minLng) minLng = lo;
@@ -119,10 +136,36 @@ function calcBounds(
     }
   }
   for (const a of animals) {
+    if (!isValidPoint(a.lat, a.lng)) continue;
     if (a.lat < minLat) minLat = a.lat;
     if (a.lat > maxLat) maxLat = a.lat;
     if (a.lng < minLng) minLng = a.lng;
     if (a.lng > maxLng) maxLng = a.lng;
+  }
+  for (const g of geofences ?? []) {
+    for (const pt of parseWktPolygon(g.area)) {
+      if (!isValidPoint(pt.lat, pt.lng)) continue;
+      if (pt.lat < minLat) minLat = pt.lat;
+      if (pt.lat > maxLat) maxLat = pt.lat;
+      if (pt.lng < minLng) minLng = pt.lng;
+      if (pt.lng > maxLng) maxLng = pt.lng;
+    }
+  }
+  for (const poly of customPolygons ?? []) {
+    for (const [lat, lng] of poly.coordinates) {
+      if (!isValidPoint(lat, lng)) continue;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+    }
+  }
+  for (const pos of positions ?? []) {
+    if (!isValidPoint(pos.latitude, pos.longitude)) continue;
+    if (pos.latitude < minLat) minLat = pos.latitude;
+    if (pos.latitude > maxLat) maxLat = pos.latitude;
+    if (pos.longitude < minLng) minLng = pos.longitude;
+    if (pos.longitude > maxLng) maxLng = pos.longitude;
   }
   return [
     [minLat, minLng],
@@ -130,14 +173,39 @@ function calcBounds(
   ];
 }
 
+function isValidPoint(lat: number, lng: number) {
+  return Number.isFinite(lat) && Number.isFinite(lng);
+}
+
+function isValidBounds(bounds: LatLngBoundsLiteral) {
+  return (
+    Array.isArray(bounds) &&
+    bounds.length === 2 &&
+    bounds.every(
+      (pair) =>
+        Array.isArray(pair) &&
+        pair.length === 2 &&
+        pair.every((value) => Number.isFinite(value)),
+    )
+  );
+}
+
 function pointsBounds(
   points: { lat: number; lng: number }[],
 ): LatLngBoundsLiteral {
-  let minLat = Infinity,
-    maxLat = -Infinity,
-    minLng = Infinity,
-    maxLng = -Infinity;
-  for (const p of points) {
+  const validPoints = points.filter((p) => isValidPoint(p.lat, p.lng));
+  if (validPoints.length === 0) {
+    return [
+      [0, 0],
+      [0, 0],
+    ];
+  }
+
+  let minLat = validPoints[0].lat,
+    maxLat = validPoints[0].lat,
+    minLng = validPoints[0].lng,
+    maxLng = validPoints[0].lng;
+  for (const p of validPoints) {
     if (p.lat < minLat) minLat = p.lat;
     if (p.lat > maxLat) maxLat = p.lat;
     if (p.lng < minLng) minLng = p.lng;
@@ -166,6 +234,7 @@ function BoundsFlyer({ bounds }: { bounds: LatLngBoundsLiteral }) {
   const map = useMap();
   const lastKey = useRef<string>("");
   useEffect(() => {
+    if (!isValidBounds(bounds)) return;
     const key = JSON.stringify(bounds);
     if (key === lastKey.current) return;
     lastKey.current = key;
@@ -255,13 +324,17 @@ function SelectedPolygonFlyer({
     if (selectedId === seen.current) return;
     const poly = polygons?.find((p) => p.id === selectedId);
     if (!poly || poly.coordinates.length === 0) return;
+
+    const validCoords = poly.coordinates.filter(([lat, lng]) => isValidPoint(lat, lng));
+    if (validCoords.length === 0) return;
+
     seen.current = selectedId;
 
-    let minLat = Infinity,
-      minLng = Infinity,
-      maxLat = -Infinity,
-      maxLng = -Infinity;
-    for (const [lat, lng] of poly.coordinates) {
+    let minLat = validCoords[0][0],
+      minLng = validCoords[0][1],
+      maxLat = validCoords[0][0],
+      maxLng = validCoords[0][1];
+    for (const [lat, lng] of validCoords) {
       if (lat < minLat) minLat = lat;
       if (lat > maxLat) maxLat = lat;
       if (lng < minLng) minLng = lng;
@@ -271,6 +344,7 @@ function SelectedPolygonFlyer({
       [minLat, minLng],
       [maxLat, maxLng],
     ];
+    if (!isValidBounds(bounds)) return;
     map.flyToBounds(bounds, { padding: [48, 48], duration: 0.45, maxZoom: 15 });
   }, [selectedId, polygons, map]);
   return null;
@@ -279,10 +353,15 @@ function SelectedPolygonFlyer({
 export default function MapViewLeaflet({
   animals,
   zones,
+  geofences,
+  devices,
+  positions,
   baseLat,
   baseLng,
   onAnimalClick,
   selectedAnimalId = null,
+  onDeviceClick,
+  selectedDeviceId = null,
   routePath,
   routeCurrentIdx,
   recenterToken = 0,
@@ -297,7 +376,6 @@ export default function MapViewLeaflet({
   draftPolygon,
   onMapClick,
 }: MapViewLeafletProps) {
-  const mapRef = useRef<LeafletMap | null>(null);
   const [layer, setLayer] = useState<LayerKey>(readSavedLayer);
 
   function changeLayer(next: LayerKey) {
@@ -308,9 +386,16 @@ export default function MapViewLeaflet({
   }
 
   const bounds = useMemo(() => {
-    if (routePath && routePath.length > 0) return pointsBounds(routePath);
-    return calcBounds(zones, animals, baseLat, baseLng);
-  }, [zones, animals, baseLat, baseLng, routePath]);
+    const rawBounds =
+      routePath && routePath.length > 0
+        ? pointsBounds(routePath)
+        : calcBounds(zones, animals, baseLat, baseLng, geofences, customPolygons, positions);
+    const fallback: LatLngBoundsLiteral = [
+      [baseLat, baseLng],
+      [baseLat, baseLng],
+    ];
+    return isValidBounds(rawBounds) ? rawBounds : fallback;
+  }, [zones, animals, baseLat, baseLng, routePath, geofences, customPolygons, positions]);
 
   const visibleAnimals = useMemo(() => {
     if (routePath && routePath.length > 0) {
@@ -319,17 +404,65 @@ export default function MapViewLeaflet({
     return animals;
   }, [animals, selectedAnimalId, routePath]);
 
+  const positionByDevice = useMemo(() => {
+    const map: Record<number | string, Position> = {};
+    for (const pos of positions ?? []) {
+      map[pos.deviceId] = pos;
+    }
+    return map;
+  }, [positions]);
+
+  const deviceById = useMemo(() => {
+    const map: Record<number, Device> = {};
+    for (const device of devices ?? []) {
+      map[device.id] = device;
+    }
+    return map;
+  }, [devices]);
+
+  const deviceIdsWithAnimals = useMemo(() => {
+    const set = new Set<number>();
+    for (const animal of animals) {
+      if (!animal.deviceId) continue;
+      if (animal.deviceId.startsWith("D-T-")) {
+        const id = Number(animal.deviceId.slice(4));
+        if (!Number.isNaN(id)) set.add(id);
+      }
+    }
+    return set;
+  }, [animals]);
+
+  const visibleDevices = useMemo(() => {
+    if (!devices) return [] as Device[];
+    return devices.filter((device) => {
+      if (!deviceIdsWithAnimals.has(device.id)) return true;
+      const animal = animals.find(
+        (a) => a.deviceId === `D-T-${device.id}`,
+      );
+      return !animal || !isValidPoint(animal.lat, animal.lng);
+    });
+  }, [animals, devices, deviceIdsWithAnimals]);
+
+  function statusColor(status?: string) {
+    if (status === "online") return STATUS_COLOR.safe;
+    if (status === "offline") return STATUS_COLOR.offline;
+    return STATUS_COLOR.warning;
+  }
+
   return (
     <>
       <LayerControl active={layer} onChange={changeLayer} />
       <MapContainer
-        bounds={bounds}
-        boundsOptions={{ padding: [28, 28] }}
+        center={[baseLat, baseLng]}
+        zoom={13}
+        minZoom={2}
+        maxZoom={20}
+        maxBounds={[[40, 87], [52.5, 120]]}
+        maxBoundsViscosity={0.75}
         className="h-full w-full"
         zoomControl={false}
         attributionControl
         scrollWheelZoom
-        ref={mapRef}
       >
       <SizeWatcher />
       <BoundsFlyer bounds={bounds} />
@@ -408,6 +541,25 @@ export default function MapViewLeaflet({
         </>
       )}
 
+      {geofences?.map((g) => {
+        const coords = parseWktPolygon(g.area);
+        if (coords.length < 3) return null;
+        return (
+          <Polygon
+            key={`geofence-${g.id}`}
+            positions={coords.map((c) => [c.lat, c.lng] as [number, number])}
+            pathOptions={{
+              color: "#E24B4A",
+              fillColor: "#E24B4A",
+              fillOpacity: 0.08,
+              weight: 1.75,
+              opacity: 0.8,
+              dashArray: "6 4",
+            }}
+          />
+        );
+      })}
+
       {zones
         .filter((z) => z.active)
         .map((z) => {
@@ -442,10 +594,17 @@ export default function MapViewLeaflet({
       {visibleAnimals.map((a) => {
         const selected = a.id === selectedAnimalId;
         const r = selected ? 8 : a.status === "danger" ? 5 : 4;
+        const deviceKey = typeof a.deviceId === "string" && a.deviceId.startsWith("D-T-")
+          ? Number(a.deviceId.slice(4))
+          : Number(a.deviceId);
+        const devicePos = a.deviceId ? positionByDevice[deviceKey] : undefined;
+        const centerLat = devicePos?.latitude ?? a.lat;
+        const centerLng = devicePos?.longitude ?? a.lng;
+        if (!isValidPoint(centerLat, centerLng)) return null;
         return (
           <CircleMarker
-            key={a.id}
-            center={[a.lat, a.lng]}
+            key={`animal-${a.id}`}
+            center={[centerLat, centerLng]}
             radius={r}
             pathOptions={{
               color: "#ffffff",
@@ -456,7 +615,50 @@ export default function MapViewLeaflet({
             eventHandlers={{
               click: () => onAnimalClick?.(a.id),
             }}
-          />
+          >
+            <Tooltip direction="top" offset={[0, -r]} sticky>
+              <div className="text-xs leading-tight">
+                <div className="font-semibold truncate">{a.name ?? a.id}</div>
+                <div>{devicePos ? `${devicePos.speed.toFixed(1)} км/ц` : "Хурд: —"}</div>
+                <div>{timeAgoMn(devicePos?.fixTime ?? a.lastSeenAt)}</div>
+              </div>
+            </Tooltip>
+          </CircleMarker>
+        );
+      })}
+
+      {visibleDevices.map((device) => {
+        const pos = positionByDevice[device.id];
+        // Use position data if available, otherwise fall back to base location
+        const lat = pos?.latitude ?? baseLat;
+        const lng = pos?.longitude ?? baseLng;
+        
+        if (!isValidPoint(lat, lng)) return null;
+        
+        const selected = device.id === selectedDeviceId;
+        return (
+          <CircleMarker
+            key={`device-${device.id}`}
+            center={[lat, lng]}
+            radius={selected ? 7 : 5}
+            pathOptions={{
+              color: "#ffffff",
+              fillColor: statusColor(device.status),
+              fillOpacity: 1,
+              weight: selected ? 2.5 : 1.5,
+            }}
+            eventHandlers={{
+              click: () => onDeviceClick?.(device.id),
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -5]} sticky>
+              <div className="text-xs leading-tight">
+                <div className="font-semibold truncate">{device.name}</div>
+                <div>{pos ? `${pos.speed.toFixed(1)} км/ц` : "Хурд: —"}</div>
+                <div className="uppercase">{device.status}</div>
+              </div>
+            </Tooltip>
+          </CircleMarker>
         );
       })}
 

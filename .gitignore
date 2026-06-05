@@ -46,6 +46,9 @@ next-env.d.ts
 /public/swe-worker-*.js
 /public/swe-worker-*.js.map
 
+# nested dependency folders should not be committed
+**/node_modules
+
 # Smoke test screenshots (dev only)
 .smoke/
 

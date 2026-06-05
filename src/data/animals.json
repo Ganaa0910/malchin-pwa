@@ -1,5 +1,28 @@
 [
   {
+    "id": "A-COW001",
+    "tag": "COW001",
+    "name": "Үхэр №1",
+    "species": "үхэр",
+    "breed": "Монгол үхэр",
+    "age": 3,
+    "sex": "male",
+    "weightKg": 550,
+    "color": "Хээр",
+    "ownerId": "owner-1",
+    "herdId": "herd-cow",
+    "deviceId": "COW001",
+    "lat": 48.3640,
+    "lng": 106.7460,
+    "altitudeM": 1300,
+    "lastSeenAt": "2026-06-05T12:00:00.000Z",
+    "status": "safe",
+    "proximity": "SAFE",
+    "speedKmh": 2.5,
+    "distanceFromBaseM": 450,
+    "healthFlags": []
+  },
+  {
     "id": "A-010",
     "tag": "MGN-0010",
     "name": "Хонгил",
