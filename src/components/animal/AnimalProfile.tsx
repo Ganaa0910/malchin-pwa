@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 import { useAnimal, useDevice } from "@/lib/db/hooks";
 import { RoutePlayback } from "@/components/animal/RoutePlayback";
 import { EventLog } from "@/components/animal/EventLog";
 import { Topbar } from "@/components/nav/Topbar";
 import { mn } from "@/lib/i18n/mn";
-import { cn } from "@/lib/utils";
+import { cn, parseTraccarDeviceId } from "@/lib/utils";
+import { devicesApi, positionsApi, tripsApi, type Position } from "@/lib/api";
 import type { AnimalStatus, Species } from "@/types/animal";
 
 const SPECIES_EMOJI: Record<Species, string> = {
@@ -40,6 +42,100 @@ function signalLabel(s: number): { v: string; cls: string } {
 export function AnimalProfile({ id }: { id: string }) {
   const animal = useAnimal(id);
   const device = useDevice(animal?.deviceId);
+  const [liveDevice, setLiveDevice] = useState<any>(null);
+  const [livePosition, setLivePosition] = useState<Position | null>(null);
+  const [routePoints, setRoutePoints] = useState<Array<{ lat: number; lng: number; ts?: string; speedKmh?: number }>>([]);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!animal?.deviceId) {
+      setLiveDevice(null);
+      setLivePosition(null);
+      return;
+    }
+
+    const traccarId = parseTraccarDeviceId(animal.deviceId);
+    if (!traccarId) {
+      setLiveDevice(null);
+      setLivePosition(null);
+      return;
+    }
+
+    let active = true;
+    const loadLiveData = async () => {
+      try {
+        const [deviceInfo, positions] = await Promise.all([
+          devicesApi.get(traccarId),
+          positionsApi.live(traccarId),
+        ]);
+        if (!active) return;
+
+        setLiveDevice(deviceInfo);
+        const latestPos = positions
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(b.fixTime).getTime() - new Date(a.fixTime).getTime(),
+          )[0];
+        setLivePosition(latestPos ?? null);
+      } catch {
+        if (!active) return;
+        setLiveDevice(null);
+        setLivePosition(null);
+      }
+    };
+
+    void loadLiveData();
+    return () => {
+      active = false;
+    };
+  }, [animal?.deviceId]);
+
+  useEffect(() => {
+    if (!animal?.deviceId) {
+      setRoutePoints([]);
+      setRouteError(null);
+      setRouteLoading(false);
+      return;
+    }
+
+    const traccarId = parseTraccarDeviceId(animal.deviceId);
+    if (traccarId === undefined) {
+      setRoutePoints([]);
+      setRouteError("GPS төхөөрөмж холбогдоогүй байна.");
+      setRouteLoading(false);
+      return;
+    }
+
+    let active = true;
+    setRouteLoading(true);
+    setRouteError(null);
+
+    const from = new Date();
+    from.setDate(from.getDate() - 1);
+    const to = new Date().toISOString();
+
+    tripsApi
+      .route(traccarId, from.toISOString(), to)
+      .then((points) => {
+        if (!active) return;
+        setRoutePoints(points);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRoutePoints([]);
+        setRouteError(error.message || "Маршрут ачаалж чадсангүй.");
+      })
+      .finally(() => {
+        if (!active) return;
+        setRouteLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [animal?.deviceId]);
 
   if (!animal) {
     return (
@@ -59,6 +155,13 @@ export function AnimalProfile({ id }: { id: string }) {
       : animal.status === "warning"
         ? "text-amber"
         : "text-ink";
+
+  const latestRoutePoint = routePoints[routePoints.length - 1];
+  const speedKmh = latestRoutePoint?.speedKmh ?? livePosition?.speed ?? animal.speedKmh;
+  const lastSyncTime = latestRoutePoint?.ts ?? livePosition?.fixTime ?? animal.lastSeenAt;
+  const batteryValue = liveDevice?.battery ?? device?.battery;
+  const signalValue = liveDevice?.signal ?? device?.signal;
+  const deviceOnline = liveDevice?.online ?? device?.online;
 
   return (
     <>
@@ -103,11 +206,11 @@ export function AnimalProfile({ id }: { id: string }) {
           />
           <Metric
             label={mn.device.battery}
-            value={device ? `${device.battery}%` : "—"}
-            valueCls={device ? batteryColor(device.battery) : "text-mut"}
+            value={batteryValue != null ? `${batteryValue}%` : "—"}
+            valueCls={batteryValue != null ? batteryColor(batteryValue) : "text-mut"}
             sub={
-              device
-                ? device.online
+              batteryValue != null
+                ? deviceOnline
                   ? mn.device.statusOnline
                   : mn.device.statusOffline
                 : mn.animal.noDevice
@@ -115,14 +218,14 @@ export function AnimalProfile({ id }: { id: string }) {
           />
           <Metric
             label={mn.animal.gpsSignal}
-            value={device ? signalLabel(device.signal).v : "—"}
-            valueCls={device ? signalLabel(device.signal).cls : "text-mut"}
-            sub={device ? `${device.signal}%` : ""}
+            value={signalValue != null ? signalLabel(signalValue).v : "—"}
+            valueCls={signalValue != null ? signalLabel(signalValue).cls : "text-mut"}
+            sub={signalValue != null ? `${signalValue}%` : ""}
           />
           <Metric
             label={mn.animal.lastSync}
-            value={format(new Date(animal.lastSeenAt), "HH:mm")}
-            sub={format(new Date(animal.lastSeenAt), "MM-dd")}
+            value={format(new Date(lastSyncTime), "HH:mm")}
+            sub={format(new Date(lastSyncTime), "MM-dd")}
           />
         </div>
 

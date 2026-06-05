@@ -75,6 +75,7 @@ export function AlertsList() {
   const alerts = useAlerts();
   const showBreach = useAppStore((s) => s.showBreach);
   const [filter, setFilter] = useState<"all" | AlertType>("all");
+  const [creatingSample, setCreatingSample] = useState(false);
 
   const newCount = alerts.filter((a) => !a.acknowledged).length;
 
@@ -99,16 +100,50 @@ export function AlertsList() {
     })).filter((x) => x.items.length > 0);
   }, [alerts, filter]);
 
+  async function createSampleAlert() {
+    setCreatingSample(true);
+    try {
+      const id = `AL-SAMPLE-${Date.now()}`;
+      await getDb().alerts.put({
+        id,
+        type: "breach",
+        priority: "critical",
+        title: "Жишээ: Хашаа давсан",
+        message: "Үхэр COW001 нь хашаа давсан байршилд орж, анхаарал шаардлагатай.",
+        animalId: "A-001",
+        deviceId: "D-001",
+        zoneId: "zone-main",
+        createdAt: new Date().toISOString(),
+        resolvedAt: null,
+        acknowledged: false,
+        lat: 48.365,
+        lng: 106.742,
+      });
+    } finally {
+      setCreatingSample(false);
+    }
+  }
+
   return (
     <div className="px-4 pb-nav pt-4 md:px-6 md:pt-5">
       {/* Page header */}
-      <div className="mb-3.5 flex items-end justify-between gap-3">
-        <h1 className="text-[26px] font-bold leading-none tracking-tight">
-          {mn.alerts.title}
-        </h1>
-        <span className="font-mono text-xs text-mut">
-          {newCount} {mn.alerts.newCount} · {mn.alerts.recent}
-        </span>
+      <div className="mb-3.5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-[26px] font-bold leading-none tracking-tight">
+            {mn.alerts.title}
+          </h1>
+          <span className="font-mono text-xs text-mut">
+            {newCount} {mn.alerts.newCount} · {mn.alerts.recent}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={createSampleAlert}
+          disabled={creatingSample}
+          className="inline-flex items-center justify-center rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink-2 transition-colors hover:border-line-2 disabled:cursor-wait disabled:opacity-60"
+        >
+          {creatingSample ? "Үүсгэж байна..." : "Жишээ мэдэгдэл үүсгэх"}
+        </button>
       </div>
 
       {/* Type filter chips */}

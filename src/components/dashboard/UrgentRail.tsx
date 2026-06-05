@@ -2,8 +2,10 @@
 
 import { useMemo } from "react";
 import type { Animal, AnimalStatus } from "@/types/animal";
+import type { Device, Position } from "@/lib/api";
 import { mn } from "@/lib/i18n/mn";
 import { cn } from "@/lib/utils";
+import { timeAgoMn } from "@/lib/time";
 
 const SEVERITY: Record<AnimalStatus, number> = {
   danger: 0,
@@ -35,25 +37,57 @@ const STATUS_LABEL: Record<AnimalStatus, string> = {
 
 export function UrgentRail({
   animals,
+  devices,
+  positions,
   selectedId,
   onSelect,
 }: {
   animals: Animal[];
+  devices: Device[];
+  positions: Position[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const urgent = useMemo(
-    () =>
-      animals
-        .filter((a) => a.status !== "safe")
-        .sort((a, b) => {
-          const s = SEVERITY[a.status] - SEVERITY[b.status];
-          if (s !== 0) return s;
-          return a.distanceFromBaseM - b.distanceFromBaseM;
-        })
-        .slice(0, 24),
-    [animals],
-  );
+  const deviceById = useMemo(() => {
+    const map = new Map<number, Device>();
+    for (const device of devices) {
+      map.set(device.id, device);
+    }
+    return map;
+  }, [devices]);
+
+  const positionByDevice = useMemo(() => {
+    const map = new Map<number, Position>();
+    for (const position of positions) {
+      map.set(position.deviceId, position);
+    }
+    return map;
+  }, [positions]);
+
+  const urgent = useMemo(() => {
+    return animals
+      .filter((a) => a.status !== "safe")
+      .map((animal) => {
+        let deviceId: number | undefined;
+        if (animal.deviceId?.startsWith("D-T-")) {
+          const parsed = Number(animal.deviceId.slice(4));
+          if (Number.isFinite(parsed)) deviceId = parsed;
+        }
+
+        const position = deviceId !== undefined ? positionByDevice.get(deviceId) : undefined;
+        return {
+          animal,
+          liveSpeed: position?.speed,
+          liveLastSeen: position?.fixTime ?? animal.lastSeenAt,
+        };
+      })
+      .sort((a, b) => {
+        const s = SEVERITY[a.animal.status] - SEVERITY[b.animal.status];
+        if (s !== 0) return s;
+        return a.animal.distanceFromBaseM - b.animal.distanceFromBaseM;
+      })
+      .slice(0, 24);
+  }, [animals, positionByDevice]);
 
   if (urgent.length === 0) return null;
 
@@ -66,12 +100,14 @@ export function UrgentRail({
         className="flex gap-2.5 overflow-x-auto rounded-xl border border-line bg-bg/95 p-2.5 shadow-lg backdrop-blur"
         style={{ scrollbarWidth: "none" }}
       >
-        {urgent.map((a) => (
+        {urgent.map((item) => (
           <UrgentCard
-            key={a.id}
-            animal={a}
-            active={selectedId === a.id}
-            onClick={() => onSelect(a.id)}
+            key={item.animal.id}
+            animal={item.animal}
+            liveSpeed={item.liveSpeed}
+            liveLastSeen={item.liveLastSeen}
+            active={selectedId === item.animal.id}
+            onClick={() => onSelect(item.animal.id)}
           />
         ))}
       </div>
@@ -81,14 +117,19 @@ export function UrgentRail({
 
 function UrgentCard({
   animal,
+  liveSpeed,
+  liveLastSeen,
   active,
   onClick,
 }: {
   animal: Animal;
+  liveSpeed?: number;
+  liveLastSeen: string;
   active: boolean;
   onClick: () => void;
 }) {
   const label = animal.name ?? animal.id;
+  const speedLabel = liveSpeed != null ? `${liveSpeed.toFixed(1)} км/ц` : "—";
   return (
     <button
       type="button"
@@ -114,6 +155,9 @@ function UrgentCard({
         </div>
         <div className="mt-0.5 truncate font-mono text-[10px] text-mut">
           {STATUS_LABEL[animal.status]} · {mn.species[animal.species]}
+        </div>
+        <div className="mt-1 truncate font-mono text-[10px] text-mut">
+          {speedLabel} · {timeAgoMn(liveLastSeen)}
         </div>
       </div>
       <div className="text-right font-mono text-[13px] font-bold leading-none tabular-nums">

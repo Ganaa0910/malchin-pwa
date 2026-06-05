@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Undo2, X, Eye, EyeOff, Trash2 } from "lucide-react";
 import {
   Sheet,
@@ -14,6 +14,8 @@ import { Topbar } from "@/components/nav/Topbar";
 import { useAnimals, useOwner, usePolygons, useZones } from "@/lib/db/hooks";
 import { addPolygon, deletePolygon, setPolygonActive } from "@/lib/db/polygons";
 import { deleteZone, setZoneActive } from "@/lib/db/zones";
+import { geofencesApi, type Geofence } from "@/lib/api";
+import { parseWktPolygon } from "@/lib/wkt";
 import {
   pointInPolygon,
   distanceToPolygonM,
@@ -41,17 +43,19 @@ type Fence = {
   coordinates: [number, number][];
   color: string;
   active: boolean;
-  source: "zone" | "polygon";
+  source: "zone" | "polygon" | "geofence";
 };
 
 function setFenceActive(f: Fence, active: boolean): Promise<void> {
-  return f.source === "zone"
-    ? setZoneActive(f.id, active)
-    : setPolygonActive(f.id, active);
+  if (f.source === "zone") return setZoneActive(f.id, active);
+  if (f.source === "polygon") return setPolygonActive(f.id, active);
+  return Promise.resolve();
 }
 
 function deleteFence(f: Fence): Promise<void> {
-  return f.source === "zone" ? deleteZone(f.id) : deletePolygon(f.id);
+  if (f.source === "zone") return deleteZone(f.id);
+  if (f.source === "polygon") return deletePolygon(f.id);
+  return geofencesApi.delete(Number(f.id)).then(() => undefined);
 }
 
 function fmtDist(m: number): string {
@@ -70,8 +74,13 @@ export function PolygonScreen() {
   const [drawing, setDrawing] = useState(false);
   const [draft, setDraft] = useState<[number, number][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [geofences, setGeofences] = useState<Geofence[]>([]);
 
-  // Imported zones + user-drawn polygons, unified into one fence list.
+  useEffect(() => {
+    geofencesApi.list().then(setGeofences).catch(() => undefined);
+  }, []);
+
+  // Imported zones + owned Traccar geofences + user-drawn polygons, unified into one fence list.
   const fences = useMemo<Fence[]>(
     () => [
       ...zones.map((z) => ({
@@ -82,6 +91,17 @@ export function PolygonScreen() {
         active: z.active !== false,
         source: "zone" as const,
       })),
+      ...geofences
+        .filter((g) => g.attributes?.owner === "user")
+        .map((g) => ({
+          id: String(g.id),
+          name: g.name,
+          coordinates: parseWktPolygon(g.area).map((c) => [c.lat, c.lng] as [number, number]),
+          color: "#E24B4A",
+          active: true,
+          source: "geofence" as const,
+        }))
+        .filter((f) => f.coordinates.length >= 3),
       ...polygons.map((p) => ({
         id: p.id,
         name: p.name,
@@ -91,7 +111,7 @@ export function PolygonScreen() {
         source: "polygon" as const,
       })),
     ],
-    [zones, polygons],
+    [zones, geofences, polygons],
   );
 
   const selected = fences.find((f) => f.id === selectedId) ?? null;
@@ -265,7 +285,7 @@ export function PolygonScreen() {
                     ).length
                   }
                   onSelect={() => setSelectedId(f.id)}
-                  onToggle={() => setFenceActive(f, !f.active)}
+                  onToggle={f.source !== "geofence" ? () => setFenceActive(f, !f.active) : undefined}
                 />
               ))
             )}
@@ -338,7 +358,7 @@ function FenceItem({
   fence: Fence;
   animalsInside: number;
   onSelect: () => void;
-  onToggle: () => void;
+  onToggle?: () => void;
 }) {
   const active = fence.active;
   const area = polygonAreaKm2(fence.coordinates);
@@ -375,20 +395,26 @@ function FenceItem({
             </span>
           </span>
         </button>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
-          title={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
-          className={cn(
-            "flex size-[30px] shrink-0 items-center justify-center rounded-[7px] border transition-colors [&_svg]:size-4",
-            active
-              ? "border-line bg-bg-2 text-ink-2"
-              : "border-transparent text-mut-2",
-          )}
-        >
-          {active ? <Eye /> : <EyeOff />}
-        </button>
+        {onToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
+            title={active ? mn.polygon.activeLabel : mn.polygon.inactiveLabel}
+            className={cn(
+              "flex size-[30px] shrink-0 items-center justify-center rounded-[7px] border transition-colors [&_svg]:size-4",
+              active
+                ? "border-line bg-bg-2 text-ink-2"
+                : "border-transparent text-mut-2",
+            )}
+          >
+            {active ? <Eye /> : <EyeOff />}
+          </button>
+        ) : (
+          <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[7px] border border-line bg-bg-2 text-ink-2 text-[10px] font-semibold">
+            Гео
+          </span>
+        )}
       </div>
       <div className="mt-2.5 flex gap-3.5 font-mono text-[10px] text-mut">
         <span>

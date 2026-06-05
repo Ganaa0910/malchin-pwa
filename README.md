@@ -16,6 +16,20 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+If you are using the companion backend service, set `NEXT_PUBLIC_API_URL=http://localhost:3000` in `.env.local` so the frontend calls the backend directly.
+
+### Backend service
+
+The companion backend lives in `backend/backend/` and exposes the API endpoints used by the app. Start it with:
+
+```bash
+cd backend/backend
+npm install
+npm run dev
+```
+
+Then make sure `NEXT_PUBLIC_API_URL` in your root `.env.local` points to the backend URL (`http://localhost:3000`).
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
