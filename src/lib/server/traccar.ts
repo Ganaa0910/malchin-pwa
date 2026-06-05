@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 
-const TRACCAR_API_URL = process.env.TRACCAR_API_URL;
 const TRACCAR_USERNAME = process.env.TRACCAR_USERNAME;
 const TRACCAR_PASSWORD = process.env.TRACCAR_PASSWORD;
 const TRACCAR_TOKEN = process.env.TRACCAR_TOKEN;
-
-if (!TRACCAR_API_URL) {
-  throw new Error("Missing TRACCAR_API_URL environment variable.");
-}
 
 const authHeaders: Record<string, string> = {};
 if (TRACCAR_TOKEN) {
@@ -17,6 +12,12 @@ if (TRACCAR_TOKEN) {
 }
 
 export async function traccarFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  // Resolve lazily so a missing env var fails the request at runtime, not the
+  // build (Next evaluates route modules during `next build`).
+  const TRACCAR_API_URL = process.env.TRACCAR_API_URL;
+  if (!TRACCAR_API_URL) {
+    throw new Error("Missing TRACCAR_API_URL environment variable.");
+  }
   const url = new URL(path, TRACCAR_API_URL).toString();
   const response = await fetch(url, {
     ...init,

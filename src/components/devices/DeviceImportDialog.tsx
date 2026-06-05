@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { devicesApi, type Device } from "@/lib/api";
 import { getDb } from "@/lib/db/dexie";
+import type { Animal } from "@/types/animal";
 import type { Herd } from "@/types/owner";
 import { mn } from "@/lib/i18n/mn";
 
@@ -101,7 +102,7 @@ export function DeviceImportDialog() {
           id: animalId,
           tag: device.uniqueId,
           name: device.name || null,
-          species: herd.species,
+          species: herd.species as Animal["species"],
           breed: "",
           age: 3,
           sex: Math.random() > 0.5 ? "male" : "female",

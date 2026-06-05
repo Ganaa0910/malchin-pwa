@@ -56,7 +56,7 @@ async function autoImportTraccarDevices() {
           battery: 0,
           signal: 0,
           firmwareVersion: "Traccar",
-          lastPingAt: device.lastUpdate ? new Date(device.lastUpdate) : new Date(),
+          lastPingAt: device.lastUpdate ? new Date(device.lastUpdate).toISOString() : new Date().toISOString(),
           online: device.status === "online",
         });
 
