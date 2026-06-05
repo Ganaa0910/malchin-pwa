@@ -116,7 +116,23 @@ export const positionsApi = {
   },
 
   latest: () =>
-    request<{ data: Position[] }>("/api/positions/latest").then(r => r.data),
+    // /api/positions/latest reads the DB cache, which returns snake_case columns
+    // (device_id, fix_time, …). Normalize to the camelCase Position shape the app
+    // uses everywhere, so live positions actually match their device.
+    request<{ data: Array<Record<string, unknown>> }>("/api/positions/latest").then(r =>
+      r.data.map((p): Position => ({
+        id: Number(p.id ?? p.traccar_id ?? 0),
+        deviceId: Number(p.deviceId ?? p.device_id),
+        latitude: Number(p.latitude),
+        longitude: Number(p.longitude),
+        altitude: Number(p.altitude ?? 0),
+        speed: Number(p.speed ?? 0),
+        course: Number(p.course ?? 0),
+        fixTime: String(p.fixTime ?? p.fix_time ?? p.deviceTime ?? p.device_time ?? ""),
+        address: (p.address as string) ?? undefined,
+        attributes: (p.attributes as Record<string, unknown>) ?? undefined,
+      })),
+    ),
 };
 
 // ── Geofences ─────────────────────────────────────────────────────────────────
@@ -161,15 +177,18 @@ export const tripsApi = {
   },
 
   route: (deviceId: number, from: string, to: string) =>
-    request<{ data: RoutePoint[] }>(
+    request<{ data: RoutePoint[] } | RoutePoint[]>(
       `/api/trips/route?deviceId=${deviceId}&from=${from}&to=${to}`,
-    ).then((r) =>
-      r.data.map((point) => ({
+    ).then((r) => {
+      // /api/trips/route returns a raw Traccar position array, while the other
+      // endpoints wrap data in { data: [...] }. Handle both shapes.
+      const points = Array.isArray(r) ? r : (r.data ?? []);
+      return points.map((point) => ({
         lat: point.latitude,
         lng: point.longitude,
         ts:
           point.time ?? point.deviceTime ?? point.serverTime ?? undefined,
         speedKmh: point.speed ?? 0,
-      })),
-    ),
+      }));
+    }),
 };

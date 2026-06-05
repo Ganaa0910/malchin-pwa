@@ -21,7 +21,7 @@ import type { Animal, AnimalStatus } from "@/types/animal";
 import type { Zone } from "@/types/zone";
 import type { Device, Geofence, Position } from "@/lib/api";
 import { parseWktPolygon } from "@/lib/wkt";
-import { cn } from "@/lib/utils";
+import { cn, parseTraccarDeviceId } from "@/lib/utils";
 import { mn } from "@/lib/i18n/mn";
 import { timeAgoMn } from "@/lib/time";
 
@@ -420,28 +420,45 @@ export default function MapViewLeaflet({
     return map;
   }, [devices]);
 
+  const deviceByUniqueId = useMemo(() => {
+    const map: Record<string, Device> = {};
+    for (const device of devices ?? []) {
+      if (device.uniqueId) map[device.uniqueId] = device;
+    }
+    return map;
+  }, [devices]);
+
+  // Resolve an animal's deviceId to the live Traccar numeric id. Prefer matching
+  // the device by uniqueId (e.g. "COW001"); fall back to the "D-T-<id>"/"D-<id>"
+  // id convention for animals that encode the numeric id directly.
+  const resolveDeviceId = (deviceId?: string | null): number | undefined =>
+    (deviceId ? deviceByUniqueId[deviceId]?.id : undefined) ??
+    parseTraccarDeviceId(deviceId);
+
   const deviceIdsWithAnimals = useMemo(() => {
     const set = new Set<number>();
     for (const animal of animals) {
-      if (!animal.deviceId) continue;
-      if (animal.deviceId.startsWith("D-T-")) {
-        const id = Number(animal.deviceId.slice(4));
-        if (!Number.isNaN(id)) set.add(id);
-      }
+      const id = resolveDeviceId(animal.deviceId);
+      if (id !== undefined) set.add(id);
     }
     return set;
-  }, [animals]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animals, deviceByUniqueId]);
 
   const visibleDevices = useMemo(() => {
     if (!devices) return [] as Device[];
     return devices.filter((device) => {
       if (!deviceIdsWithAnimals.has(device.id)) return true;
-      const animal = animals.find(
-        (a) => a.deviceId === `D-T-${device.id}`,
-      );
-      return !animal || !isValidPoint(animal.lat, animal.lng);
+      const animal = animals.find((a) => resolveDeviceId(a.deviceId) === device.id);
+      if (!animal) return true;
+      const pos = positionByDevice[device.id];
+      const placeable =
+        (pos && isValidPoint(pos.latitude, pos.longitude)) ||
+        isValidPoint(animal.lat, animal.lng);
+      return !placeable;
     });
-  }, [animals, devices, deviceIdsWithAnimals]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animals, devices, deviceIdsWithAnimals, positionByDevice, deviceByUniqueId]);
 
   function statusColor(status?: string) {
     if (status === "online") return STATUS_COLOR.safe;
@@ -594,10 +611,8 @@ export default function MapViewLeaflet({
       {visibleAnimals.map((a) => {
         const selected = a.id === selectedAnimalId;
         const r = selected ? 8 : a.status === "danger" ? 5 : 4;
-        const deviceKey = typeof a.deviceId === "string" && a.deviceId.startsWith("D-T-")
-          ? Number(a.deviceId.slice(4))
-          : Number(a.deviceId);
-        const devicePos = a.deviceId ? positionByDevice[deviceKey] : undefined;
+        const deviceKey = resolveDeviceId(a.deviceId);
+        const devicePos = deviceKey !== undefined ? positionByDevice[deviceKey] : undefined;
         const centerLat = devicePos?.latitude ?? a.lat;
         const centerLng = devicePos?.longitude ?? a.lng;
         if (!isValidPoint(centerLat, centerLng)) return null;

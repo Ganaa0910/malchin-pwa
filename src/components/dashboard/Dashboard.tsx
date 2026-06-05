@@ -151,7 +151,8 @@ export function Dashboard() {
 
     let lat = a.lat;
     let lng = a.lng;
-    const traccarId = parseTraccarDeviceId(a.deviceId);
+    const device = devices.find((d) => d.uniqueId === a.deviceId);
+    const traccarId = device?.id ?? parseTraccarDeviceId(a.deviceId);
     if (traccarId !== undefined) {
       const pos = positions.find((p) => p.deviceId === traccarId);
       if (pos) {
