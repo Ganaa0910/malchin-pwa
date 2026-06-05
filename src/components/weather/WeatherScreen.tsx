@@ -2,7 +2,6 @@
 
 import { useLiveWeather } from "@/lib/weather/useLiveWeather";
 import { WeatherCard } from "./WeatherCard";
-import { DzudRiskCard } from "./DzudRiskCard";
 import { ForecastStrip } from "./ForecastStrip";
 import { DeviceAlertsPanel } from "@/components/devices/DeviceAlertsPanel";
 import { mn } from "@/lib/i18n/mn";
@@ -40,13 +39,12 @@ export function WeatherScreen() {
         <span className="font-mono text-xs text-mut">{sourceLabel}</span>
       </div>
 
-      {/* Main + risk */}
-      <div className="mb-3.5 grid gap-2.5 md:grid-cols-[1.4fr_1fr]">
+      {/* Current conditions */}
+      <div className="mb-3.5">
         <WeatherCard weather={weather} />
-        <DzudRiskCard risk={weather.dzudRisk} factors={weather.dzudFactors} />
       </div>
 
-      {/* 7-day */}
+      {/* 15-day */}
       <div className="mb-3.5 rounded-xl border border-line bg-surface p-4">
         <h3 className="mb-3 text-sm font-bold">{mn.weather.forecastDays}</h3>
         <ForecastStrip days={weather.forecast} />

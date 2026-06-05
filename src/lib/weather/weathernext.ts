@@ -152,7 +152,7 @@ function toWeather(
   }
 
   const days: DailyForecast[] = [...byDay.entries()]
-    .slice(0, 7)
+    .slice(0, 15)
     .map(([date, recs]) => {
       const temps = recs.map((r) => kelvinToC(r.t2m ?? 273.15));
       const tempMaxC = Math.max(...temps);

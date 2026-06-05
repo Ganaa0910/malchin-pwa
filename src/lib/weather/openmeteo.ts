@@ -49,7 +49,7 @@ export async function fetchOpenMeteoWeather(
     "weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum,snowfall_sum",
   );
   url.searchParams.set("timezone", "auto");
-  url.searchParams.set("forecast_days", "7");
+  url.searchParams.set("forecast_days", "15");
 
   const res = await fetch(url, {
     headers: { accept: "application/json" },

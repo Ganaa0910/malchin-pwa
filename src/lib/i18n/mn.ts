@@ -118,7 +118,7 @@ export const mn = {
     tempUnit: "°C",
     windUnit: "км/ц",
     windMs: "м/с",
-    forecastDays: "7 хоног",
+    forecastDays: "15 хоног",
     updated: "шинэчилсэн",
     riskTitle: "Зудны эрсдэл",
   },
