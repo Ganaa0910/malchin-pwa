@@ -18,7 +18,8 @@ const UPDATE_INTERVAL_MS = 2000;   // 1 position every 2 seconds
 // Realistic cow speeds
 const WALK_SPEED_MS  = 0.7;   // ~2.5 km/h  — normal grazing walk
 const MAX_SPEED_MS   = 0.9;   // ~3.2 km/h  — purposeful walk
-const FLEE_SPEED_MS  = 1.1;   // ~4.0 km/h  — spooked/turning back
+const EXC_SPEED_MS   = 2.2;   // ~7.9 km/h  — striding to the fence with intent
+const FLEE_SPEED_MS  = 2.6;   // ~9.4 km/h  — spooked, hurrying home
 
 // ── Baganuur geofence polygon ─────────────────────────────────────────────────
 const FENCE = [
@@ -103,18 +104,20 @@ function distM(aLon, aLat, bLon, bLat) {
 function buildPath() {
   const path = [];
 
-  // Home range centre — open pasture just west of the fence's western edge,
-  // so the cow naturally grazes up to the boundary now and then.
-  const HOME_LON = 108.272, HOME_LAT = 47.747;
-  const RANGE_M  = 500;            // cow mostly stays within ~500 m of home
+  // Home range centre — open pasture ~600 m west of the fence, clear of the
+  // 500 m alert band, so the cow rests "safe" and only enters the band during
+  // its periodic curious runs at the boundary.
+  const HOME_LON = 108.268, HOME_LAT = 47.748;
+  const RANGE_M  = 120;            // tight home range so resting stays clear
   const TARGET   = 1200;           // total fixes to emit (~40 min at 2 s each)
+  const EXCURSION_GAP = 170;       // fixes between fence runs (~6 min apart)
 
   let lon = HOME_LON, lat = HOME_LAT;
   let heading = rand(0, 360);      // travel direction, with momentum
   let speed   = WALK_SPEED_MS;
   let phase   = "graze";           // graze | roam | excursion | flee
   let stepsInPhase = 0;
-  let excursionDone = false;
+  let lastExcursion = 30 - EXCURSION_GAP;  // first fence run after ~30 fixes
 
   while (path.length < TARGET) {
     const fromHome = distM(lon, lat, HOME_LON, HOME_LAT);
@@ -128,9 +131,10 @@ function buildPath() {
         const jLat = lat + rand(-1.5, 1.5) / 111_320;
         path.push({ lon: jLon, lat: jLat, speed: rand(0, 0.3), phase: "grazing" });
       }
-      // Once settled in (past the first quarter) and back near home, make one
-      // curious excursion toward the fence; otherwise just roam and graze.
-      const wantExcursion = !excursionDone && path.length > TARGET * 0.25 && fromHome < 450;
+      // When the cooldown has elapsed and the cow is back near home, make
+      // another curious run at the fence; otherwise just roam and graze.
+      const wantExcursion =
+        (path.length - lastExcursion) >= EXCURSION_GAP && fromHome < RANGE_M;
       phase = wantExcursion ? "excursion" : "roam";
       heading = (heading + rand(-60, 60) + 360) % 360;
       stepsInPhase = 0;
@@ -156,15 +160,15 @@ function buildPath() {
     // ── EXCURSION: curious wander toward the fence (still meandering) ─────────
     if (phase === "excursion") {
       const goalBear = bearingTo(lon, lat, 108.282, 47.746);
-      heading = (heading * 0.5 + goalBear * 0.4 + rand(-22, 22) + 360) % 360;
-      speed = Math.max(0.5, Math.min(MAX_SPEED_MS, speed + rand(-0.08, 0.1)));
+      heading = (heading * 0.55 + goalBear * 0.4 + rand(-16, 16) + 360) % 360;
+      speed = Math.max(1.2, Math.min(EXC_SPEED_MS, speed + rand(-0.1, 0.25)));
       const step = speed * (UPDATE_INTERVAL_MS / 1000);
       const [nLon, nLat] = movePoint(lon, lat, step, heading);
 
       // The instant the next step would cross into the zone → collar fires
       if (ptInPoly(nLon, nLat)) {
         for (let k = 0; k < 3; k++) path.push({ lon, lat, speed: 0, phase: "collar_alert" });
-        excursionDone = true;
+        lastExcursion = path.length;     // reset cooldown for the next run
         phase = "flee";
         heading = (bearingTo(lon, lat, HOME_LON, HOME_LAT) + rand(-25, 25) + 360) % 360;
         stepsInPhase = 0;
@@ -175,7 +179,7 @@ function buildPath() {
       path.push({ lon, lat, speed: speed * 3.6, phase: "approach" });
 
       // Safety only: if the boundary is somehow never reached, fall back to grazing.
-      if (stepsInPhase > 600) { phase = "graze"; stepsInPhase = 0; }
+      if (stepsInPhase > 400) { phase = "graze"; stepsInPhase = 0; }
       continue;
     }
 
