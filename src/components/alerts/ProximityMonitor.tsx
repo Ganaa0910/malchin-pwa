@@ -3,11 +3,41 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAnimals, useZones, usePolygons } from "@/lib/db/hooks";
 import { useNotifications } from "@/lib/store/useNotifications";
-import { buildFences, dangerFences } from "@/lib/fences";
+import { buildFences, dangerFences, type EvalFence } from "@/lib/fences";
 import { distanceToPolygonM, pointInPolygon } from "@/lib/proximity";
 import { geofencesApi, devicesApi, positionsApi, type Geofence } from "@/lib/api";
+import { getDb } from "@/lib/db";
 import { mn } from "@/lib/i18n/mn";
 import type { Animal } from "@/types/animal";
+
+let alertSeq = 0;
+
+/** Persist a proximity event into the Dexie alerts table so it shows in Мэдэгдэл. */
+function persistAlert(
+  animal: Animal,
+  fence: EvalFence,
+  deter: boolean,
+  title: string,
+  message: string,
+) {
+  getDb()
+    .alerts.add({
+      id: `prx-${Date.now()}-${alertSeq++}`,
+      type: "breach",
+      priority: deter ? "high" : "medium",
+      title,
+      message,
+      animalId: animal.id ?? null,
+      deviceId: animal.deviceId ?? null,
+      zoneId: fence.id ?? null,
+      createdAt: new Date().toISOString(),
+      resolvedAt: null,
+      acknowledged: false,
+      lat: animal.lat,
+      lng: animal.lng,
+    })
+    .catch(() => {});
+}
 
 /** Warning band: an animal within this distance of a danger-zone edge is "near". */
 const NEAR_M = 500;
@@ -145,26 +175,23 @@ export function ProximityMonitor() {
 
       // 1) Just started getting near a danger zone.
       if (phase !== "clear" && prev.phase === "clear") {
-        push({
-          id: `near-${a.id}`,
-          kind: phase === "deter" ? "deter" : "warn",
-          title: phase === "deter" ? mn.notify.breachTitle : mn.notify.nearTitle,
-          body: fill(phase === "deter" ? mn.notify.breachBody : mn.notify.nearBody, {
-            animal: name,
-            zone: nearest.name,
-            dist: fmtDist(bestDist),
-          }),
+        const deter = phase === "deter";
+        const title = deter ? mn.notify.breachTitle : mn.notify.nearTitle;
+        const body = fill(deter ? mn.notify.breachBody : mn.notify.nearBody, {
+          animal: name,
+          zone: nearest.name,
+          dist: fmtDist(bestDist),
         });
+        push({ id: `near-${a.id}`, kind: deter ? "deter" : "warn", title, body });
+        persistAlert(a, nearest, deter, title, body);
       }
 
       // 2) Reached the boundary (buzzer) and is now retreating → turned around.
       if (prev.gotClose && movingAway && phase !== "deter") {
-        push({
-          id: `deter-${a.id}`,
-          kind: "deter",
-          title: mn.notify.deterTitle,
-          body: fill(mn.notify.deterBody, { animal: name, zone: nearest.name }),
-        });
+        const title = mn.notify.deterTitle;
+        const body = fill(mn.notify.deterBody, { animal: name, zone: nearest.name });
+        push({ id: `deter-${a.id}`, kind: "deter", title, body });
+        persistAlert(a, nearest, true, title, body);
         next.gotClose = false;
       }
 
