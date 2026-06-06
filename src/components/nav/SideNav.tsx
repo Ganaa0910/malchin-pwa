@@ -101,7 +101,7 @@ export function SideNav() {
       <Link
         href="/"
         aria-label={mn.app.name}
-        className="flex items-center border-b border-line px-2 pb-4"
+        className="flex items-center border-b border-line px-2.5 pb-4"
       >
         <span aria-hidden className="brand-logo h-8 w-40 shrink-0" />
       </Link>

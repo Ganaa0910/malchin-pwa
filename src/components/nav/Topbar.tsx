@@ -21,7 +21,8 @@ export function Topbar({
   return (
     <header
       className={cn(
-        "pt-safe sticky top-0 z-30 flex items-center gap-3.5 border-b border-line bg-bg/85 px-4 py-5 backdrop-blur md:px-5 md:py-6",
+        "sticky top-0 z-30 flex items-center gap-3.5 border-b border-line bg-bg/85 px-4 pb-4 backdrop-blur md:px-5 md:pb-5",
+        "[padding-top:max(1rem,env(safe-area-inset-top))] md:[padding-top:max(1.25rem,env(safe-area-inset-top))]",
         className,
       )}
     >
