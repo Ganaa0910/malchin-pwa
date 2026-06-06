@@ -80,7 +80,7 @@ export function AnimalStatusSheet({
   if (!animal) return null;
 
   const speciesLabel = mn.species[animal.species];
-  const title = animal.name ? `${animal.name} · ${animal.id}` : animal.id;
+  const title = animal.name ?? animal.id;
   const speedKmh = livePosition?.speed ?? animal.speedKmh;
   const lastSeenAt = livePosition?.fixTime ?? animal.lastSeenAt;
   const batteryValue = liveDevice?.battery ?? device?.battery;

@@ -55,16 +55,19 @@ export function InfoCard({
       )}
 
       {/* Data grid */}
-      <dl className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
         {rows.map((row, idx) => (
-          <div key={idx}>
+          <div
+            key={idx}
+            className="rounded-lg border border-line bg-surface px-3 py-2"
+          >
             {/* Label with icon */}
             <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
               {row.icon && <row.icon className="size-3.5" aria-hidden />}
-              <span>{row.label}</span>
+              <span className="text-xs">{row.label}</span>
             </div>
             {/* Value */}
-            <div className={cn("text-right font-medium", row.valueCls)}>
+            <div className={cn("font-semibold tabular-nums", row.valueCls)}>
               {row.value}
             </div>
           </div>

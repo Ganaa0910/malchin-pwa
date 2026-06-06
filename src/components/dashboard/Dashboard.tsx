@@ -331,10 +331,10 @@ export function Dashboard() {
         {/* Top overlays */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col gap-2 p-3">
           {/* Status panel */}
-          <div className="pointer-events-auto w-full rounded-xl border border-line bg-bg/95 p-4 shadow-lg backdrop-blur md:w-[300px]">
-            <div className="font-mono text-xs text-mut">Сүргийн төлөв</div>
-            <div className="mt-0.5 text-[17px] font-bold">{loc}</div>
-            <div className="mt-2.5 grid grid-cols-4 gap-2">
+          <div className="pointer-events-auto w-auto max-w-[260px] rounded-xl border border-line bg-bg/95 p-2.5 shadow-lg backdrop-blur md:max-w-none md:w-[300px] md:p-4">
+            <div className="font-mono text-[10px] text-mut md:text-xs">Сүргийн төлөв</div>
+            <div className="mt-0.5 text-sm font-bold md:text-[17px]">{loc}</div>
+            <div className="mt-2 grid grid-cols-4 gap-1.5 md:mt-2.5 md:gap-2">
               <Stat v={counts.total} l="Нийт" />
               <Stat v={counts.safe} l="OK" tone="success" />
               <Stat v={counts.warning} l="Анхаар" tone="amber" />
@@ -407,11 +407,11 @@ function Stat({
           ? "text-success"
           : "text-ink";
   return (
-    <div className="rounded-[7px] border border-line bg-surface px-2 py-1.5 text-center">
-      <div className={cn("font-mono text-lg font-bold leading-none", toneClass)}>
+    <div className="rounded-[7px] border border-line bg-surface px-1.5 py-1 text-center md:px-2 md:py-1.5">
+      <div className={cn("font-mono text-base font-bold leading-none md:text-lg", toneClass)}>
         {v}
       </div>
-      <div className="mt-1 font-mono text-[9px] uppercase tracking-wide text-mut">
+      <div className="mt-0.5 font-mono text-[9px] uppercase tracking-wide text-mut md:mt-1">
         {l}
       </div>
     </div>
