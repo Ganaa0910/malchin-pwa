@@ -64,30 +64,48 @@ export function UrgentRail({
     return map;
   }, [positions]);
 
-  const urgent = useMemo(() => {
-    return animals
-      .filter((a) => a.status !== "safe")
-      .map((animal) => {
-        let deviceId: number | undefined;
-        if (animal.deviceId?.startsWith("D-T-")) {
-          const parsed = Number(animal.deviceId.slice(4));
-          if (Number.isFinite(parsed)) deviceId = parsed;
-        }
+  // Traccar uniqueId -> numeric id, so directly-linked devices (e.g. COW001)
+  // can be matched to their live position too.
+  const uniqueToId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const device of devices) map.set(device.uniqueId, device.id);
+    return map;
+  }, [devices]);
 
-        const position = deviceId !== undefined ? positionByDevice.get(deviceId) : undefined;
-        return {
-          animal,
-          liveSpeed: position?.speed,
-          liveLastSeen: position?.fixTime ?? animal.lastSeenAt,
-        };
-      })
+  const resolveDeviceId = (a: Animal): number | undefined => {
+    if (a.deviceId?.startsWith("D-T-")) {
+      const parsed = Number(a.deviceId.slice(4));
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+    if (a.deviceId && uniqueToId.has(a.deviceId)) return uniqueToId.get(a.deviceId);
+    return undefined;
+  };
+
+  const urgent = useMemo(() => {
+    // The live simulated cow always leads the strip so demo viewers spot it.
+    // It's seeded as A-COW001 but linked to the live Traccar device (deviceId
+    // becomes "D-T-…"), so match on the stable id / original device id.
+    const isCow = (a: Animal) => a.id === "A-COW001" || a.deviceId === "COW001";
+    const cow = animals.find(isCow);
+    const rest = animals
+      .filter((a) => a.status !== "safe" && !isCow(a))
       .sort((a, b) => {
-        const s = SEVERITY[a.animal.status] - SEVERITY[b.animal.status];
+        const s = SEVERITY[a.status] - SEVERITY[b.status];
         if (s !== 0) return s;
-        return a.animal.distanceFromBaseM - b.animal.distanceFromBaseM;
-      })
-      .slice(0, 24);
-  }, [animals, positionByDevice]);
+        return a.distanceFromBaseM - b.distanceFromBaseM;
+      });
+
+    return [...(cow ? [cow] : []), ...rest].slice(0, 24).map((animal) => {
+      const deviceId = resolveDeviceId(animal);
+      const position = deviceId !== undefined ? positionByDevice.get(deviceId) : undefined;
+      return {
+        animal,
+        liveSpeed: position?.speed,
+        liveLastSeen: position?.fixTime ?? animal.lastSeenAt,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animals, positionByDevice, uniqueToId]);
 
   if (urgent.length === 0) return null;
 
