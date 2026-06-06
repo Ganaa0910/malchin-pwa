@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Bell, Plus, Minus, Crosshair } from "lucide-react";
-import { useAnimals, usePolygons, useZones, useOwner } from "@/lib/db/hooks";
+import { useAnimals, useZones, useOwner } from "@/lib/db/hooks";
 import { MapView } from "@/components/map/MapView";
 import { devicesApi, positionsApi, geofencesApi, tripsApi, type Device, type Geofence, type Position } from "@/lib/api";
 import { AnimalStatusSheet } from "@/components/animal/AnimalStatusSheet";
@@ -72,13 +72,30 @@ export function Dashboard() {
     return c;
   }, [animals]);
 
-  // User-drawn virtual fences (Виртуал хашаа) overlaid on the map alongside zones.
   const customPolygons = useMemo(
-    () =>
-      polygons
-        .filter((p) => p.active !== false)
-        .map((p) => ({ id: p.id, coordinates: p.coordinates, color: p.color })),
-    [polygons],
+    () => [
+      {
+        id: "pasture-west",
+        coordinates: [
+          [47.1, 105.4],
+          [48.4, 105.4],
+          [48.4, 106.3],
+          [47.1, 106.3],
+        ],
+        color: "#16a34a",
+      },
+      {
+        id: "pasture-east",
+        coordinates: [
+          [47.1, 107.1],
+          [48.4, 107.1],
+          [48.4, 108.0],
+          [47.1, 108.0],
+        ],
+        color: "#16a34a",
+      },
+    ],
+    [],
   );
 
   const getZoneAlertStatus = (
