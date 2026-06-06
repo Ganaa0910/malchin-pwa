@@ -118,10 +118,24 @@ function buildPath() {
   let phase   = "graze";           // graze | roam | excursion | flee
   let stepsInPhase = 0;
   let lastExcursion = 30 - EXCURSION_GAP;  // first fence run after ~30 fixes
+  let wrapping = false;
 
-  while (path.length < TARGET) {
+  while (true) {
     const fromHome = distM(lon, lat, HOME_LON, HOME_LAT);
     stepsInPhase++;
+
+    // Once enough fixes are emitted, amble straight home so the lap ends at the
+    // home point — the next lap then continues from there with no teleport.
+    if (!wrapping && path.length >= TARGET) wrapping = true;
+    if (wrapping) {
+      if (fromHome < 30) break;
+      const homeBear = bearingTo(lon, lat, HOME_LON, HOME_LAT);
+      heading = (homeBear + rand(-10, 10) + 360) % 360;
+      speed = Math.max(0.5, Math.min(MAX_SPEED_MS, speed + rand(-0.08, 0.1)));
+      [lon, lat] = movePoint(lon, lat, speed * (UPDATE_INTERVAL_MS / 1000), heading);
+      path.push({ lon, lat, speed: speed * 3.6, phase: "roam" });
+      continue;
+    }
 
     // ── GRAZE: stand and graze, emitting a tight cluster of jittered fixes ───
     if (phase === "graze") {
@@ -222,43 +236,44 @@ function sendPosition({ lon, lat, speed }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+// Runs forever: the cow grazes, makes periodic curious runs at the fence (collar
+// fires, it turns back), then ambles home — over and over — so anyone trying the
+// demo keeps getting live proximity alerts. Each lap ends at the home point, so
+// laps stitch together seamlessly. A Traccar blip retries instead of exiting.
 async function simulate() {
-  console.log("\n🐄  Building cow path for Baganuur geofence…");
-  const path = buildPath();
-  const alertIdx = path.findIndex(p => p.phase === "collar_alert");
+  console.log("\n🐄  COW001 continuous grazing simulation — Baganuur geofence");
+  console.log(`    Traccar : http://${TRACCAR_HOST}:${TRACCAR_PORT}`);
+  console.log(`    Mode    : looping forever (Ctrl+C to stop)\n`);
 
-  console.log(`    Device ID  : ${COW_DEVICE_ID}`);
-  console.log(`    Traccar    : http://${TRACCAR_HOST}:${TRACCAR_PORT}`);
-  console.log(`    Steps      : ${path.length}  (~${Math.round(path.length * UPDATE_INTERVAL_MS / 60000)} min)`);
-  console.log(`    Collar fires at step ${alertIdx} of ${path.length}`);
-  console.log(`\n    Watch live → http://localhost:8082\n`);
+  for (let lap = 1; ; lap++) {
+    const path = buildPath();
+    const collars = path.filter(p => p.phase === "collar_alert").length / 3;
+    console.log(`\n  ── lap ${lap}: ${path.length} fixes, ~${Math.round(collars)} fence run(s) ──`);
 
-  for (let i = 0; i < path.length; i++) {
-    const pos = path[i];
+    for (let i = 0; i < path.length; i++) {
+      const pos = path[i];
+      try {
+        await sendPosition(pos);
+      } catch {
+        console.error(`\n  ⚠️  Traccar unreachable on ${TRACCAR_HOST}:${TRACCAR_PORT} — retrying in 5s…`);
+        await new Promise(r => setTimeout(r, 5000));
+        i--;            // retry the same fix, keep the loop alive
+        continue;
+      }
 
-    try {
-      await sendPosition(pos);
-    } catch (err) {
-      console.error(`\n  ❌  Cannot reach Traccar on port ${TRACCAR_PORT}`);
-      console.error(`      Add  <entry key='osmand.port'>5055</entry>  to traccar.xml and restart.\n`);
-      process.exit(1);
+      const tag =
+        pos.phase === "collar_alert" ? "🔔 COLLAR FIRED — turning back" :
+        pos.phase === "flee"         ? "↩️  heading home              " :
+        pos.phase === "grazing"      ? "🌿 grazing                    " :
+                                       "🟢 approaching                ";
+
+      process.stdout.write(
+        `\r  lap ${lap} [${String(Math.round((i / path.length) * 100)).padStart(3)}%]  ${tag}  ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}  ${pos.speed.toFixed(1)} km/h  `
+      );
+
+      await new Promise(r => setTimeout(r, UPDATE_INTERVAL_MS));
     }
-
-    const pct = Math.round((i / path.length) * 100);
-    const tag =
-      pos.phase === "collar_alert" ? "🔔 COLLAR FIRED — turning back" :
-      pos.phase === "flee"         ? "↩️  heading home              " :
-      pos.phase === "grazing"      ? "🌿 grazing                    " :
-                                     "🟢 approaching                ";
-
-    process.stdout.write(
-      `\r  [${String(pct).padStart(3)}%]  ${tag}  ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}  ${pos.speed.toFixed(1)} km/h  `
-    );
-
-    await new Promise(r => setTimeout(r, UPDATE_INTERVAL_MS));
   }
-
-  console.log("\n\n✅  Cow is safely back home. Collar worked!\n");
 }
 
 simulate();
