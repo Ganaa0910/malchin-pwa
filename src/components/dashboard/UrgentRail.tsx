@@ -145,14 +145,7 @@ function UrgentCard({
         className={cn("size-2.5 rounded-full", STATUS_DOT[animal.status])}
       />
       <div className="min-w-0">
-        <div className="flex items-baseline gap-1.5">
-          <span className="truncate text-[13px] font-bold">{label}</span>
-          {animal.name && (
-            <span className="shrink-0 font-mono text-[10px] text-mut">
-              {animal.id}
-            </span>
-          )}
-        </div>
+        <div className="truncate text-[13px] font-bold leading-tight">{label}</div>
         <div className="mt-0.5 truncate font-mono text-[10px] text-mut">
           {STATUS_LABEL[animal.status]} · {mn.species[animal.species]}
         </div>
