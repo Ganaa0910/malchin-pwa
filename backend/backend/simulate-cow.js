@@ -10,8 +10,8 @@
 const http = require("http");
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const TRACCAR_HOST       = "localhost";
-const TRACCAR_PORT       = 5055;
+const TRACCAR_HOST       = process.env.TRACCAR_HOST || "localhost";
+const TRACCAR_PORT       = Number(process.env.TRACCAR_PORT) || 5055;
 const COW_DEVICE_ID      = "COW001";
 const UPDATE_INTERVAL_MS = 2000;   // 1 position every 2 seconds
 
@@ -87,76 +87,109 @@ function movePoint(lon, lat, meters, bear) {
 
 function rand(min, max) { return min + Math.random() * (max - min); }
 
+// ── Geo distance helper (metres) ───────────────────────────────────────────────
+function distM(aLon, aLat, bLon, bLat) {
+  const dx = (aLon - bLon) * Math.cos(((aLat + bLat) / 2) * D2R) * 111_320;
+  const dy = (aLat - bLat) * 111_320;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 // ── Build path ────────────────────────────────────────────────────────────────
+// Natural grazing walk. The cow meanders around its home range with frequent
+// grazing clusters (tight knots of jittered fixes), makes one curious excursion
+// toward the fence — where the collar fires and it turns back — then ambles home.
+// Heading carries momentum and drifts gradually, so the track wanders in BOTH
+// latitude and longitude instead of tracing a straight east–west line.
 function buildPath() {
   const path = [];
 
-  // Start well west of the fence
-  let lon = 108.210, lat = 47.752;
-  let bear = 85;           // heading roughly east
-  let speed = WALK_SPEED_MS;
-  let phase = "approach";
-  let fleeOriginLon, fleeOriginLat;
+  // Home range centre — open pasture just west of the fence's western edge,
+  // so the cow naturally grazes up to the boundary now and then.
+  const HOME_LON = 108.272, HOME_LAT = 47.747;
+  const RANGE_M  = 500;            // cow mostly stays within ~500 m of home
+  const TARGET   = 1200;           // total fixes to emit (~40 min at 2 s each)
 
-  const HOME_LON = 108.210, HOME_LAT = 47.752;
+  let lon = HOME_LON, lat = HOME_LAT;
+  let heading = rand(0, 360);      // travel direction, with momentum
+  let speed   = WALK_SPEED_MS;
+  let phase   = "graze";           // graze | roam | excursion | flee
+  let stepsInPhase = 0;
+  let excursionDone = false;
 
-  while (true) {
+  while (path.length < TARGET) {
+    const fromHome = distM(lon, lat, HOME_LON, HOME_LAT);
+    stepsInPhase++;
 
-    // ── APPROACH: drift toward fence with natural wandering ─────────────────
-    if (phase === "approach") {
-      // Gently steer toward the eastern edge of the fence (lon ~108.38)
-      const goalBear = bearingTo(lon, lat, 108.360, 47.751);
-      bear = bear * 0.75 + goalBear * 0.25 + rand(-10, 10);
-
-      // Frequent grazing pauses — cows stop a lot
-      if (Math.random() < 0.20) {
-        const grazeDuration = Math.floor(rand(3, 10));
-        for (let g = 0; g < grazeDuration; g++) {
-          path.push({ lon, lat, speed: 0, phase: "grazing" });
-        }
-        continue;
+    // ── GRAZE: stand and graze, emitting a tight cluster of jittered fixes ───
+    if (phase === "graze") {
+      const grazeFixes = Math.floor(rand(4, 12));
+      for (let g = 0; g < grazeFixes && path.length < TARGET; g++) {
+        const jLon = lon + rand(-1.5, 1.5) / (111_320 * Math.cos(lat * D2R));
+        const jLat = lat + rand(-1.5, 1.5) / 111_320;
+        path.push({ lon: jLon, lat: jLat, speed: rand(0, 0.3), phase: "grazing" });
       }
+      // Once settled in (past the first quarter) and back near home, make one
+      // curious excursion toward the fence; otherwise just roam and graze.
+      const wantExcursion = !excursionDone && path.length > TARGET * 0.25 && fromHome < 450;
+      phase = wantExcursion ? "excursion" : "roam";
+      heading = (heading + rand(-60, 60) + 360) % 360;
+      stepsInPhase = 0;
+      continue;
+    }
 
-      // Very gradual speed, slight variation
-      speed = Math.max(0.4, Math.min(MAX_SPEED_MS, speed + rand(-0.08, 0.08)));
+    // ── ROAM: amble within the home range, heading drifting gradually ────────
+    if (phase === "roam") {
+      heading = (heading + rand(-22, 22) + 360) % 360;
+      if (fromHome > RANGE_M) {                       // soft pull back near the edge
+        const homeBear = bearingTo(lon, lat, HOME_LON, HOME_LAT);
+        heading = (heading * 0.5 + homeBear * 0.5 + rand(-15, 15) + 360) % 360;
+      }
+      speed = Math.max(0.4, Math.min(MAX_SPEED_MS, speed + rand(-0.1, 0.1)));
       const step = speed * (UPDATE_INTERVAL_MS / 1000);
-      const [nLon, nLat] = movePoint(lon, lat, step, bear);
+      [lon, lat] = movePoint(lon, lat, step, heading);
+      path.push({ lon, lat, speed: speed * 3.6, phase: "roam" });
+
+      if (Math.random() < 0.22) { phase = "graze"; stepsInPhase = 0; }  // stop to graze often
+      continue;
+    }
+
+    // ── EXCURSION: curious wander toward the fence (still meandering) ─────────
+    if (phase === "excursion") {
+      const goalBear = bearingTo(lon, lat, 108.282, 47.746);
+      heading = (heading * 0.5 + goalBear * 0.4 + rand(-22, 22) + 360) % 360;
+      speed = Math.max(0.5, Math.min(MAX_SPEED_MS, speed + rand(-0.08, 0.1)));
+      const step = speed * (UPDATE_INTERVAL_MS / 1000);
+      const [nLon, nLat] = movePoint(lon, lat, step, heading);
 
       // The instant the next step would cross into the zone → collar fires
       if (ptInPoly(nLon, nLat)) {
-        // Stay at exact boundary position — collar just fired
-        path.push({ lon, lat, speed: 0, phase: "collar_alert" });
-        path.push({ lon, lat, speed: 0, phase: "collar_alert" });
-        path.push({ lon, lat, speed: 0, phase: "collar_alert" });
-        fleeOriginLon = lon;
-        fleeOriginLat = lat;
+        for (let k = 0; k < 3; k++) path.push({ lon, lat, speed: 0, phase: "collar_alert" });
+        excursionDone = true;
         phase = "flee";
-        bear = (bearingTo(lon, lat, HOME_LON, HOME_LAT) + rand(-20, 20) + 360) % 360;
+        heading = (bearingTo(lon, lat, HOME_LON, HOME_LAT) + rand(-25, 25) + 360) % 360;
+        stepsInPhase = 0;
         continue;
       }
 
       lon = nLon; lat = nLat;
       path.push({ lon, lat, speed: speed * 3.6, phase: "approach" });
+
+      // Safety only: if the boundary is somehow never reached, fall back to grazing.
+      if (stepsInPhase > 600) { phase = "graze"; stepsInPhase = 0; }
+      continue;
     }
 
-    // ── FLEE: cow moves away briskly after collar alert ──────────────────────
-    else if (phase === "flee") {
-      const goalBear = bearingTo(lon, lat, HOME_LON, HOME_LAT);
-      bear = bear * 0.6 + goalBear * 0.4 + rand(-8, 8);
-
-      // Cow is spooked — slightly faster, fewer pauses, still not running
-      if (Math.random() < 0.05) {
-        path.push({ lon, lat, speed: 0, phase: "grazing" });
-        continue;
-      }
-
+    // ── FLEE: spooked amble home — brisker, fewer pauses, still meandering ────
+    if (phase === "flee") {
+      const homeBear = bearingTo(lon, lat, HOME_LON, HOME_LAT);
+      heading = (heading * 0.55 + homeBear * 0.45 + rand(-15, 15) + 360) % 360;
       speed = Math.max(WALK_SPEED_MS, Math.min(FLEE_SPEED_MS, speed + rand(-0.05, 0.1)));
       const step = speed * (UPDATE_INTERVAL_MS / 1000);
-      [lon, lat] = movePoint(lon, lat, step, bear);
+      [lon, lat] = movePoint(lon, lat, step, heading);
       path.push({ lon, lat, speed: speed * 3.6, phase: "flee" });
 
-      const distHome = Math.sqrt((lon - HOME_LON) ** 2 + (lat - HOME_LAT) ** 2);
-      if (distHome < 0.003) break;
+      if (fromHome < 120) { phase = "graze"; stepsInPhase = 0; }  // settled back home
+      continue;
     }
   }
 
