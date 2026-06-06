@@ -71,34 +71,6 @@ export function Dashboard() {
     return c;
   }, [animals]);
 
-  const customPolygons = useMemo<
-    { id: string; coordinates: [number, number][]; color: string }[]
-  >(
-    () => [
-      {
-        id: "pasture-west",
-        coordinates: [
-          [47.1, 105.4],
-          [48.4, 105.4],
-          [48.4, 106.3],
-          [47.1, 106.3],
-        ],
-        color: "#16a34a",
-      },
-      {
-        id: "pasture-east",
-        coordinates: [
-          [47.1, 107.1],
-          [48.4, 107.1],
-          [48.4, 108.0],
-          [47.1, 108.0],
-        ],
-        color: "#16a34a",
-      },
-    ],
-    [],
-  );
-
   const getZoneAlertStatus = (
     lat: number,
     lng: number,
@@ -340,7 +312,6 @@ export function Dashboard() {
           geofences={geofences}
           devices={devices}
           positions={positions}
-          customPolygons={customPolygons}
           baseLat={baseLat}
           baseLng={baseLng}
           selectedAnimalId={selectedId}
