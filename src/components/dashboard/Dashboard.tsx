@@ -30,7 +30,6 @@ type ZoneAlertStatus =
 export function Dashboard() {
   const router = useRouter();
   const animals = useAnimals();
-  const polygons = usePolygons();
   const zones = useZones();
   const owner = useOwner();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -72,7 +71,9 @@ export function Dashboard() {
     return c;
   }, [animals]);
 
-  const customPolygons = useMemo(
+  const customPolygons = useMemo<
+    { id: string; coordinates: [number, number][]; color: string }[]
+  >(
     () => [
       {
         id: "pasture-west",
