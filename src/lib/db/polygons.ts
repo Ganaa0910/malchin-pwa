@@ -2,17 +2,25 @@
 
 import { getDb } from "./dexie";
 import type { CustomPolygon } from "@/types/polygon";
+import type { FenceKind } from "@/lib/fences";
+
+/** Green for safe (stay-inside) fences, red for danger (stay-out) fences. */
+export const FENCE_COLOR: Record<FenceKind, string> = {
+  safe: "#16a34a",
+  danger: "#E24B4A",
+};
 
 export async function addPolygon(
   coordinates: [number, number][],
   name: string,
-  color = "#0F6E56",
+  kind: FenceKind = "safe",
 ): Promise<CustomPolygon> {
   const poly: CustomPolygon = {
     id: `poly-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     name,
     coordinates,
-    color,
+    color: FENCE_COLOR[kind],
+    kind,
     active: true,
     createdAt: new Date().toISOString(),
   };

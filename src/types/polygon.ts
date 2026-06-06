@@ -9,6 +9,8 @@ export const CustomPolygonSchema = z.object({
   name: z.string(),
   coordinates: z.array(z.tuple([z.number(), z.number()])),
   color: z.string().default("#0F6E56"),
+  /** safe = animals should stay inside (green) · danger = stay out (red). */
+  kind: z.enum(["safe", "danger"]).default("safe"),
   /** Whether the fence is enabled (drawn on the map). Missing = active. */
   active: z.boolean().default(true),
   createdAt: z.string(),

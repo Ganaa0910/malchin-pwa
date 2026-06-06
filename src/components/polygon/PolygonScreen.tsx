@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Undo2, X, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Plus, Undo2, X, Eye, EyeOff, Trash2, ShieldCheck, OctagonAlert } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import type { FenceKind } from "@/lib/fences";
 import { MapView } from "@/components/map/MapView";
 import { Topbar } from "@/components/nav/Topbar";
 import { useAnimals, useOwner, usePolygons, useZones } from "@/lib/db/hooks";
@@ -75,6 +76,10 @@ export function PolygonScreen() {
   const [draft, setDraft] = useState<[number, number][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
+  // Save sheet: name + safe/danger choice for the just-drawn fence.
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [fenceName, setFenceName] = useState("");
+  const [fenceKind, setFenceKind] = useState<FenceKind>("safe");
 
   useEffect(() => {
     geofencesApi.list().then(setGeofences).catch(() => undefined);
@@ -145,9 +150,17 @@ export function PolygonScreen() {
     setDrawing(false);
     setDraft([]);
   }
-  async function saveDraw() {
+  function requestSave() {
     if (draft.length < 3) return;
-    await addPolygon(draft, `${mn.nav.polygon} ${fences.length + 1}`);
+    setFenceName(`${mn.nav.polygon} ${fences.length + 1}`);
+    setFenceKind("safe");
+    setSaveOpen(true);
+  }
+  async function confirmSave() {
+    if (draft.length < 3) return;
+    const name = fenceName.trim() || `${mn.nav.polygon} ${fences.length + 1}`;
+    await addPolygon(draft, name, fenceKind);
+    setSaveOpen(false);
     setDrawing(false);
     setDraft([]);
   }
@@ -230,7 +243,7 @@ export function PolygonScreen() {
                 </button>
                 <button
                   type="button"
-                  onClick={saveDraw}
+                  onClick={requestSave}
                   disabled={draft.length < 3}
                   className="rounded-lg bg-brand px-4 py-2.5 font-mono text-xs font-bold text-white shadow-md disabled:opacity-40"
                 >
@@ -345,7 +358,110 @@ export function PolygonScreen() {
           </ul>
         </SheetContent>
       </Sheet>
+
+      {/* Save sheet — name + safe/danger choice */}
+      <Sheet open={saveOpen} onOpenChange={setSaveOpen}>
+        <SheetContent side="bottom" className="max-w-[440px] mx-auto pb-safe">
+          <SheetHeader className="px-5">
+            <SheetTitle className="text-lg">{mn.polygon.saveTitle}</SheetTitle>
+            <SheetDescription>{mn.polygon.kindLabel}</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-5 pb-2">
+            <div>
+              <label htmlFor="fenceName" className="mb-1 block text-sm font-medium">
+                {mn.polygon.nameLabel}
+              </label>
+              <input
+                id="fenceName"
+                value={fenceName}
+                onChange={(e) => setFenceName(e.target.value)}
+                placeholder={mn.polygon.namePlaceholder}
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <KindButton
+                active={fenceKind === "safe"}
+                onClick={() => setFenceKind("safe")}
+                icon={<ShieldCheck className="size-5" />}
+                label={mn.polygon.safeKind}
+                hint={mn.polygon.safeKindHint}
+                tone="safe"
+              />
+              <KindButton
+                active={fenceKind === "danger"}
+                onClick={() => setFenceKind("danger")}
+                icon={<OctagonAlert className="size-5" />}
+                label={mn.polygon.dangerKind}
+                hint={mn.polygon.dangerKindHint}
+                tone="danger"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setSaveOpen(false)}
+                className="flex-1 rounded-lg border border-line bg-surface py-2.5 font-mono text-xs font-bold text-ink"
+              >
+                {mn.polygon.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={confirmSave}
+                className="flex-1 rounded-lg bg-brand py-2.5 font-mono text-xs font-bold text-white"
+              >
+                {mn.polygon.saveFence}
+              </button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
+  );
+}
+
+function KindButton({
+  active,
+  onClick,
+  icon,
+  label,
+  hint,
+  tone,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  tone: "safe" | "danger";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex flex-col items-start gap-1.5 rounded-xl border-2 p-3 text-left transition-colors",
+        active
+          ? tone === "danger"
+            ? "border-danger bg-danger/10"
+            : "border-success bg-success/10"
+          : "border-line bg-surface hover:border-ink-2",
+      )}
+    >
+      <span
+        className={cn(
+          tone === "danger" ? "text-danger" : "text-success",
+          !active && "opacity-70",
+        )}
+      >
+        {icon}
+      </span>
+      <span className="text-[13px] font-bold leading-tight">{label}</span>
+      <span className="font-mono text-[10px] leading-snug text-mut">{hint}</span>
+    </button>
   );
 }
 

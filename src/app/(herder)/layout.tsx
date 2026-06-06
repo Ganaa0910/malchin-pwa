@@ -2,6 +2,8 @@ import { SideNav } from "@/components/nav/SideNav";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { HerderMain } from "@/components/nav/HerderMain";
 import { DbBootstrap } from "@/components/db/DbBootstrap";
+import { ProximityMonitor } from "@/components/alerts/ProximityMonitor";
+import { NotificationHost } from "@/components/alerts/NotificationHost";
 
 /**
  * Herder shell — responsive.
@@ -18,6 +20,8 @@ export default function HerderLayout({
   return (
     <div className="md:flex md:min-h-dvh">
       <DbBootstrap />
+      <ProximityMonitor />
+      <NotificationHost />
       <SideNav />
       <HerderMain>{children}</HerderMain>
       <BottomNav />

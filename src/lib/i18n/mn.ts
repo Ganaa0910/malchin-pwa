@@ -58,6 +58,23 @@ export const mn = {
     countLabel: "хашаа",
     activeLabel: "Идэвхтэй",
     inactiveLabel: "Унтраалттай",
+    // Save sheet — safe vs danger zone selection
+    saveTitle: "Хашаа хадгалах",
+    nameLabel: "Нэр",
+    namePlaceholder: "Хашааны нэр",
+    kindLabel: "Бүсийн төрөл",
+    safeKind: "Аюулгүй бүс",
+    safeKindHint: "Мал ДОТОР нь байх ёстой",
+    dangerKind: "Аюултай бүс",
+    dangerKindHint: "Мал ОРОХ ёсгүй",
+  },
+  notify: {
+    nearTitle: "Аюултай бүсэд ойртож байна",
+    nearBody: "{animal} «{zone}» аюултай бүсээс {dist} зайд байна.",
+    deterTitle: "Дуут сэрэмжлүүлэг идэвхжлээ",
+    deterBody: "{animal} «{zone}»-д хүрч, хүзүүвч дуугарсны дараа буцлаа.",
+    breachTitle: "Мал аюултай бүсэд оров",
+    breachBody: "{animal} «{zone}» аюултай бүсэд оров.",
   },
   status: {
     safe: "Аюулгүй",
