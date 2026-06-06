@@ -16,7 +16,7 @@ import type { Device } from "@/types/device";
 import type { Alert } from "@/types/alert";
 import type { Weather } from "@/types/weather";
 
-const SEED_VERSION = "1.5.0";
+const SEED_VERSION = "1.6.0";
 const SEED_KEY = "malchin.seedVersion";
 
 /**
