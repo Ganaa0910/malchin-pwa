@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Undo2, X, Eye, EyeOff, Trash2, ShieldCheck, OctagonAlert } from "lucide-react";
+import { Plus, Undo2, X, Eye, EyeOff, Trash2, ShieldCheck, OctagonAlert, Maximize2, Minimize2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -76,6 +76,8 @@ export function PolygonScreen() {
   const [draft, setDraft] = useState<[number, number][]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
+  // Mobile: tap the map to expand it from the small strip to near-fullscreen.
+  const [mapExpanded, setMapExpanded] = useState(false);
   // Save sheet: name + safe/danger choice for the just-drawn fence.
   const [saveOpen, setSaveOpen] = useState(false);
   const [fenceName, setFenceName] = useState("");
@@ -180,7 +182,12 @@ export function PolygonScreen() {
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         {/* ===== MAP ===== */}
-        <div className="relative h-[42vh] shrink-0 md:h-auto md:flex-1">
+        <div
+          className={cn(
+            "relative shrink-0 transition-[height] duration-200 md:h-auto md:flex-1",
+            mapExpanded ? "h-[82vh]" : "h-[42vh]",
+          )}
+        >
           <MapView
             height="100%"
             animals={animals}
@@ -198,9 +205,23 @@ export function PolygonScreen() {
             onPolygonClick={drawing ? undefined : (id) => setSelectedId(id)}
             draftPolygon={drawing ? draft : undefined}
             onMapClick={
-              drawing ? (lat, lng) => setDraft((d) => [...d, [lat, lng]]) : undefined
+              drawing
+                ? (lat, lng) => setDraft((d) => [...d, [lat, lng]])
+                : () => setMapExpanded(true)
             }
           />
+
+          {/* Mobile expand / collapse toggle */}
+          {!drawing && (
+            <button
+              type="button"
+              onClick={() => setMapExpanded((v) => !v)}
+              aria-label={mapExpanded ? mn.polygon.collapseMap : mn.polygon.expandMap}
+              className="absolute left-3 top-3 z-[1100] flex size-9 items-center justify-center rounded-[10px] border border-line bg-bg/95 text-ink-2 shadow-lg backdrop-blur md:hidden [&_svg]:size-4"
+            >
+              {mapExpanded ? <Minimize2 /> : <Maximize2 />}
+            </button>
+          )}
 
           {drawing && (
             <>

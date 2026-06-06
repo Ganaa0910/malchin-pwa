@@ -58,6 +58,8 @@ export const mn = {
     countLabel: "хашаа",
     activeLabel: "Идэвхтэй",
     inactiveLabel: "Унтраалттай",
+    expandMap: "Газрын зургийг томруулах",
+    collapseMap: "Газрын зургийг багасгах",
     // Save sheet — safe vs danger zone selection
     saveTitle: "Хашаа хадгалах",
     nameLabel: "Нэр",
